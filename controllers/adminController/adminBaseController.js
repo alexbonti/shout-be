@@ -212,7 +212,7 @@ var createAdmin = function (userData, payloadData, callback) {
           if (err) cb(err)
           else {
             newAdmin = data;
-            var adminId = newAdmin._id
+            var adminId = {adminId : newAdmin._id}
             Service.AdminService.createAdminExteded(adminId, function (err, extendedData)
             {
               if (err) cb(err)
@@ -591,6 +591,42 @@ var logoutAdmin = function (userData, callbackRoute) {
   );
 }
 
+
+var getAdminExtendedProfile = function (userData, callback) {
+  var adminSummary = null;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb();
+          }
+        }
+      });
+    },
+    function (cb) {
+      Service.AdminService.getAdminExtended({
+        adminId : userData._id
+      }, { password: 0, __v: 0, createdAt: 0 }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          adminSummary = data;
+          cb()
+        }
+      })
+    }
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data : adminSummary })
+  })
+}
+
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -601,5 +637,6 @@ module.exports = {
   getUser: getUser,
   blockUnblockUser: blockUnblockUser,
   changePassword: changePassword,
-  logoutAdmin: logoutAdmin
+  logoutAdmin: logoutAdmin,
+  getAdminExtendedProfile : getAdminExtendedProfile
 };
