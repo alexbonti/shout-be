@@ -387,7 +387,7 @@ var getUser = {
     },
     config: {
       description: "change Password",
-      tags: ["api", "customer"],
+      tags: ["api", "admin"],
       auth: "UserAuth",
       validate: {
         headers: UniversalFunctions.authorizationHeaderObj,

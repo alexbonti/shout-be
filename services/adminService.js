@@ -11,10 +11,22 @@ var updateAdmin = function(criteria, dataToSet, options, callback) {
   options.new = true;
   Models.Admin.findOneAndUpdate(criteria, dataToSet, options, callback);
 };
+
+var updateAdminExtended = function(criteria, dataToSet, options, callback) {
+  options.lean = true;
+  options.new = true;
+  Models.AdminExtended.findOneAndUpdate(criteria, dataToSet, options, callback);
+};
+
+
 //Insert User in DB
 var createAdmin = function(objToSave, callback) {
   new Models.Admin(objToSave).save(callback);
 };
+
+var createAdminExteded = function(objToSave,callback){
+  new Models.AdminExtended(objToSave).save(callback);
+}
 //Delete User in DB
 var deleteAdmin = function(criteria, callback) {
   Models.Admin.findOneAndRemove(criteria, callback);
@@ -26,6 +38,11 @@ var getAdmin = function(criteria, projection, options, callback) {
   Models.Admin.find(criteria, projection, options, callback);
 };
 
+
+var getAdminExtended = function(criteria, projection, options, callback) {
+  options.lean = true;
+  Models.AdminExtended.find(criteria, projection, options, callback);
+};
 var getAdminPromise = function(criteria, projection, options) {
   options.lean = true;
   return new Promise((resolve, reject) => {
@@ -40,5 +57,8 @@ module.exports = {
   createAdmin: createAdmin,
   deleteAdmin: deleteAdmin,
   getAdmin: getAdmin,
-  getAdminPromise: getAdminPromise
+  getAdminPromise: getAdminPromise,
+  createAdminExteded : createAdminExteded,
+  getAdminExtended : getAdminExtended,
+  updateAdminExtended : updateAdminExtended
 };

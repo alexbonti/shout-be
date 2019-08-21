@@ -212,10 +212,18 @@ var createAdmin = function (userData, payloadData, callback) {
           if (err) cb(err)
           else {
             newAdmin = data;
-            cb()
+            var adminId = newAdmin._id
+            Service.AdminService.createAdminExteded(adminId, function (err, extendedData)
+            {
+              if (err) cb(err)
+              else{
+                cb()
+              }
+            })
           }
         })
       }
+      
     ],
     function (err, result) {
       if (err) return callback(err);
