@@ -23,7 +23,7 @@ var topUpBalance = {
       });
     },
     config: {
-      description: "get shouting Summary for admin",
+      description: "Top up admin balance",
       tags: ["api", "admin"],
       auth: "UserAuth",
       validate: {
