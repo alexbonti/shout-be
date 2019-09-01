@@ -148,10 +148,14 @@ var shout = function (userData, payloadData, callback) {
             Service.ShoutTransaction.createShoutTransaction(dataToCreate,function(err, transData){
               if(err) cb(err)
               else{
-                shout = transData;
+                // shout = transData;
+                element.redeemLink = "Somelink/"+transData._id;
+                console.log(element.redeemLink)
+                console.log("data : " , element)
+                NodeMailer.sendMail(element);
               }
             })
-            NodeMailer.sendMail(element);
+            
           });
           cb();
         }  
