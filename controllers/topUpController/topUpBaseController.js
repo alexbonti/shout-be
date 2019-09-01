@@ -51,7 +51,6 @@ var topUpAdmin = function (userData,payloadData, callback) {
       },
       function(cb){
           console.log(payloadData , amount)
-          dataToUpdate = { $set : { balance : amount }};
           var history = [{
             credit : payloadData.amount,
             date : Date.now(),
