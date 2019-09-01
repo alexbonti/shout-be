@@ -6,5 +6,6 @@ module.exports = {
     User:require('./user'),
     ForgetPassword:require('./forgotPasswordRequest'),
     Admin: require('./admin'),
-    AdminExtended : require('./adminExtended')
+    AdminExtended : require('./adminExtended'),
+    ShoutTransaction : require('./shoutTransaction'),
 };

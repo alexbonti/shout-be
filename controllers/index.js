@@ -7,5 +7,5 @@ module.exports = {
   UserBaseController: require("./userController/userBaseController"),
   AdminBaseController: require("./adminController/adminBaseController"),
   TopUpBaseController : require("./topUpController/topUpBaseController"),
-  
+  ShoutBaseController : require("./shoutController/shoutBaseController"),
 };
