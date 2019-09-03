@@ -10,15 +10,13 @@ var NodeMailer = require("../../lib/nodeMailer");
 
 
 
-var shout = function (userData, payloadData, callback) {
+var createShout = function (userData, payloadData, callback) {
   var adminSummary = null;
   var numberOfPeople = 0;
   var shouting = 0;
   var DATA = {};
   var dataToSend = [];
-  var shout = {};
-  var userSummaries = null;
-  var userSummary = null;
+  var dataNotSent = [];
   var dataToUpdate = null;
   var amount = null;
   async.series([
@@ -74,123 +72,155 @@ var shout = function (userData, payloadData, callback) {
 
       if (payloadData.userId) {
         var taskInParallel = [];
-          for (var key in payloadData.userId) {
-              (function (key) {
-                  taskInParallel.push((function (key) {
-                      return function (embeddedCB) {
-                          //TODO
-                          Service.UserService.getUser({ _id: payloadData.userId[key]}, {}, { lean : true} , function(err, data){
-                            if(err)
-                            {
-                              embeddedCB(err)
-                            }
-                            else{
-                              
-                              if (payloadData.credits > 0 && amount >= payloadData.credits) {
-                                amount -=  payloadData.credits;
-                                DATA.adminName = userFound.fullName;
-                                DATA.receiverId = data[0]._id;
-                                DATA.receiversName = data[0].firstName;
-                                DATA.receiversEmail = data[0].emailId;
-                                DATA.credits = payloadData.credits;
-                                DATA.message = payloadData.message;
-                                console.log(DATA);
-                                dataToSend.push(DATA);
-                                DATA = {};
-                                numberOfPeople += 1;
-                                embeddedCB()
-                              } else {
-                                cb(ERROR.INVALID_AMOUNT)
-                              }
-                            }
-                          })
-                      }
-                  })(key))
-              }(key));
-          }
-          async.parallel(taskInParallel, function (err, result) {
-              cb(null);
-          });
-      }
-      else{
+        for (var key in payloadData.userId) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+                //TODO
+                Service.UserService.getUser({
+                  _id: payloadData.userId[key]
+                }, {}, {
+                  lean: true
+                }, function (err, data) {
+                  if (err) {
+                    embeddedCB(err)
+                  } else {
+
+                    if (payloadData.credits > 0 && amount >= payloadData.credits) {
+                      amount -= payloadData.credits;
+                      DATA.adminName = userFound.fullName;
+                      DATA.receiverId = data[0]._id;
+                      DATA.receiversName = data[0].firstName;
+                      DATA.receiversEmail = data[0].emailId;
+                      DATA.credits = payloadData.credits;
+                      DATA.message = payloadData.message;
+                      console.log(DATA);
+                      dataToSend.push(DATA);
+                      DATA = {};
+                      numberOfPeople += 1;
+                    }
+                    else{
+                      DATA.receiverId = data[0]._id;
+                      DATA.receiversName = data[0].firstName;
+                      DATA.receiversEmail = data[0].emailId;
+                      DATA.credits = payloadData.credits;
+                      DATA.message = payloadData.message;
+                      dataNotSent.push(DATA);
+                      DATA = {};
+                    }
+                    embeddedCB()
+                  }
+                })
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      } else {
         cb();
-      } 
+      }
     },
-      
-    
+
+
 
     function (cb) {
       console.log(payloadData, amount)
 
-      shouting = payloadData.credits*numberOfPeople;
-      totalshouting = adminSummary.shouting+ shouting;
+      shouting = payloadData.credits * numberOfPeople;
+      totalshouting = adminSummary.shouting + shouting;
       recognition = adminSummary.recognition + numberOfPeople;
       dataToUpdate = {
         $set: {
           balance: amount,
-          shouting : totalshouting,
-          recognition : recognition
+          shouting: totalshouting,
+          recognition: recognition
         }
       };
       Service.AdminService.updateAdminExtended({
         adminId: userData._id
       }, dataToUpdate, {}, function (err, data) {
         if (err) cb(err);
-        else{
-          dataToSend.forEach(element => {
-            dataToCreate = {
-              adminId : adminSummary._id,
-              receiverId : element.receiverId,
-              emailId : element.receiversEmail,
-              credits : element.credits,
-              message : element.message
+        else {
+
+          if (dataToSend) {
+            var taskInParallel = [];
+            for (var key in dataToSend) {
+              (function (key) {
+                taskInParallel.push((function (key) {
+                  return function (embeddedCB) {
+                    dataToCreate = {
+                      adminId: adminSummary._id,
+                      receiverId: dataToSend[key].receiverId,
+                      emailId: dataToSend[key].receiversEmail,
+                      credits: dataToSend[key].credits,
+                      message: dataToSend[key].message
+                    }
+                    //TODO
+                    Service.ShoutTransaction.createShoutTransaction(dataToCreate, function (err, transData) {
+                      if (err) {
+                        embeddedCB(err)
+                      } else {
+                        console.log("!!!!!!!!!!!!!!!!!!!!!!", dataToSend[key])
+                        dataToSend[key].redeemLink = "Somelink/" + transData._id;
+                        console.log(dataToSend[key].redeemLink)
+                        console.log("data : ", dataToSend[key])
+                        NodeMailer.sendMail(dataToSend[key]);
+                        embeddedCB()
+                      }
+                    })
+                  }
+                })(key))
+              }(key));
             }
-            Service.ShoutTransaction.createShoutTransaction(dataToCreate,function(err, transData){
-              if(err) cb(err)
-              else{
-                // shout = transData;
-                element.redeemLink = "Somelink/"+transData._id;
-                console.log(element.redeemLink)
-                console.log("data : " , element)
-                NodeMailer.sendMail(element);
-              }
-            })
-            
-          });
-          cb();
-        }  
+            async.parallel(taskInParallel, function (err, result) {
+              cb(null);
+            });
+          }
+
+        }
       })
     },
   ], function (err, result) {
     if (err) callback(err)
-    else callback(null, {numberOfPeople,shouting,dataToSend})
+    else callback(null, {
+      numberOfPeople,
+      shouting,
+      dataToSend,
+      dataNotSent
+    })
   })
 }
 
 
-var getShoutTransaction = function(payloadData, callback) {
+var getShoutTransaction = function (payloadData, callback) {
   var transData = []
   async.series([
 
     function (cb) {
       var criteria = {
-        _id : payloadData.transactionId
+        _id: payloadData.transactionId
       };
-      Service.ShoutTransaction.getShoutTransaction(criteria, { __v: 0 }, {}, function (err, data) {
+      Service.ShoutTransaction.getShoutTransaction(criteria, {
+        __v: 0
+      }, {}, function (err, data) {
         if (err) cb(err)
         else {
-            transData = data;
-            cb()
+          transData = data;
+          cb()
         }
       })
     }
 
   ], function (err, result) {
     if (err) callback(err)
-    else callback(null, { data: transData })
+    else callback(null, {
+      data: transData
+    })
   })
 }
 module.exports = {
-  shout: shout,
-  getShoutTransaction : getShoutTransaction
+  createShout: createShout,
+  getShoutTransaction: getShoutTransaction
 }

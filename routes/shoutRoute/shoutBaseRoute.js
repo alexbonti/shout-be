@@ -3,7 +3,7 @@ var Controller = require("../../controllers");
 var Joi = require("joi");
 var Config = require("../../config");
 
-var shout = {
+var createShout = {
     method: "PUT",
     path: "/api/admin/shout",
     handler: function(request, h) {
@@ -13,7 +13,7 @@ var shout = {
           request.auth.credentials.userData) ||
         null;
       return new Promise((resolve, reject) => {
-        Controller.ShoutBaseController.shout(userData, request.payload, function(err, data) {
+        Controller.ShoutBaseController.createShout(userData, request.payload, function(err, data) {
           if (!err) {
             resolve(UniversalFunctions.sendSuccess(null, data));
           } else {
@@ -81,7 +81,7 @@ var shout = {
 
 
   var shoutBaseRoute = [
-      shout,
+      createShout,
       getShoutTransaction
   ];
   module.exports = shoutBaseRoute;

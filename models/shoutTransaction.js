@@ -7,7 +7,8 @@ var shoutTransaction = new Schema({
     receiverId : { type : Schema.ObjectId , ref : 'user'},
     emailId: { type: String, trim: true, required: true},
     credits : {type : Number},
-    message : {type : String}
+    message : {type : String},
+    redeemed : {type : Boolean, default : false}
 });
 
 module.exports = mongoose.model('shoutTransaction', shoutTransaction);
