@@ -53,7 +53,7 @@ const init = async () => {
 
   server.route(Routes);
 
-  SocketManager.connectSocket(server);
+  //SocketManager.connectSocket(server);
 
   BootStrap.bootstrapAdmin(function(err){
     if(err) console.log(err)

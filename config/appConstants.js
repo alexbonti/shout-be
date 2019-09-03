@@ -193,7 +193,17 @@ var STATUS_MSG = {
       statusCode: 400,
       customMessage: "Inavlid email format",
       type: "INVALID_EMAIL_FORMAT"
-    }
+    },
+    INVALID_AMOUNT: {
+      statusCode: 400,
+      customMessage: "Inavlid Amount",
+      type: "INVALID_AMOUNT"
+    },
+    INVALID_COUPON: {
+      statusCode: 400,
+      customMessage: "Inavlid Coupon",
+      type: "INVALID_COUPON"
+    },
   },
   SUCCESS: {
     DEFAULT: {
