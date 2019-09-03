@@ -80,8 +80,42 @@ var createShout = {
   };
 
 
+  var redeemTransaction = {
+    method: "POST",
+    path: "/api/admin/redeemTransaction",
+    handler: function(request, h) {
+      return new Promise((resolve, reject) => {
+        Controller.ShoutBaseController.redeemTransaction(request.payload, function(err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        });
+      });
+    },
+    config: {
+      description: "Redeem transaction",
+      tags: ["api", "user"],
+      validate: {
+        payload : {
+          transactionId : Joi.string().required(),
+          amount : Joi.number().required()  
+        }
+      },
+      plugins: {
+        "hapi-swagger": {
+          responseMessages:
+            UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+        }
+      }
+    }
+  };
+
+
   var shoutBaseRoute = [
       createShout,
-      getShoutTransaction
+      getShoutTransaction,
+      redeemTransaction
   ];
   module.exports = shoutBaseRoute;

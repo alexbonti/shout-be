@@ -200,15 +200,22 @@ var getShoutTransaction = function (payloadData, callback) {
 
     function (cb) {
       var criteria = {
-        _id: payloadData.transactionId
+        _id: payloadData.transactionId,
+        redeemed : false
       };
       Service.ShoutTransaction.getShoutTransaction(criteria, {
         __v: 0
       }, {}, function (err, data) {
         if (err) cb(err)
         else {
-          transData = data;
-          cb()
+          if(data.length == 0){
+            cb(ERROR.INVALID_COUPON)
+          }
+          else{
+            transData = data;
+            cb()
+          }
+          
         }
       })
     }
@@ -220,7 +227,113 @@ var getShoutTransaction = function (payloadData, callback) {
     })
   })
 }
+
+
+
+var redeemTransaction = function (payloadData, callback) {
+  var transData = []
+  var adminSummary = null;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: payloadData.transactionId,
+        redeemed : false
+      };
+      Service.ShoutTransaction.getShoutTransaction(criteria, {
+        __v: 0
+      }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if(data.length == 0)
+          {
+            cb(ERROR.INVALID_COUPON)
+          }
+          else{
+            transData = data && data[0] || null;
+            cb()
+          }
+        }
+      })
+    },
+
+    function(cb){
+      if(payloadData.amount == transData.credits){
+        Service.ShoutTransaction.updateShoutTransaction({_id : payloadData.transactionId}, {redeemed : true},{}, function (err , data){
+          if(err) cb(err)
+          else{
+            cb()
+          }
+        })
+      }
+      else if(payloadData.amount < transData.credits){
+
+        var dataToPass = {
+          transactionId : payloadData.transactionId,
+          adminId : transData.adminId,
+          credits : transData.credits,
+          amountSpent : payloadData.amount
+        }
+
+        concludeTransaction(dataToPass,function(err,data){
+          cb()
+        })
+      }
+      else{
+        cb(ERROR.INVALID_AMOUNT)
+      }
+    }
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, {
+      data: transData
+    })
+  })
+}
+
+var concludeTransaction = function(DATA ,callback){
+  var adminSummary = null;
+
+  async.series([
+    function (cb) {
+      Service.AdminService.getAdminExtended({_id : DATA.adminId}, {} , {} , function(err , data){
+        if(err) cb(err)
+        else{
+          adminSummary = data && data[0] || null;
+          cb()
+        }
+      })
+    },
+
+    function(cb){
+      Service.ShoutTransaction.updateShoutTransaction({_id : DATA.transactionId} , {$set : {redeemed : true}} , {} , function(err, data){
+        if(err) cb(err)
+        else{
+            cb()
+        }
+      })
+    },
+
+    function(cb)
+    {
+      var amount = adminSummary.balance + DATA.credits - DATA.amountSpent;
+      Service.AdminService.updateAdminExtended({_id : DATA.adminId} , {$set : { balance : amount }} , {} , function(err , data){
+        if(err) cb(err)
+        else{
+          adminSummary = data;
+          cb()
+        }
+      })
+    }
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null)
+  })
+}
+
+
 module.exports = {
   createShout: createShout,
-  getShoutTransaction: getShoutTransaction
+  getShoutTransaction: getShoutTransaction,
+  redeemTransaction : redeemTransaction
 }
