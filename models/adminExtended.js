@@ -1,5 +1,4 @@
 var mongoose = require('mongoose') 
-require('mongoose-double')(mongoose);
 var SchemaTypes = mongoose.Schema.Types;
 var Schema = mongoose.Schema;
 var Config = require('../config');
