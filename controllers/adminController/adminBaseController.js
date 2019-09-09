@@ -627,6 +627,41 @@ var getAdminExtendedProfile = function (userData, callback) {
   })
 }
 
+var getAdminBalance = function (userData, callback) {
+  var adminBalance = null;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb();
+          }
+        }
+      });
+    },
+    function (cb) {
+      Service.AdminService.getAdminExtended({
+        adminId : userData._id
+      }, { password: 0, __v: 0, createdAt: 0 }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          adminBalance = data[0].balance;
+          cb()
+        }
+      })
+    }
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { balance : adminBalance })
+  })
+}
+
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -638,5 +673,6 @@ module.exports = {
   blockUnblockUser: blockUnblockUser,
   changePassword: changePassword,
   logoutAdmin: logoutAdmin,
-  getAdminExtendedProfile : getAdminExtendedProfile
+  getAdminExtendedProfile : getAdminExtendedProfile,
+  getAdminBalance : getAdminBalance
 };
