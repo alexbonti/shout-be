@@ -22,6 +22,14 @@ exports.bootstrapAdmin = function (callbackParent) {
             userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN,
             createdAt: UniversalFunctions.getTimestamp(),
             firstLogin: true
+        },
+        {
+            emailId: 'anirudh.m0009@gmail.com',
+            password: UniversalFunctions.CryptData("123456"),
+            fullName: 'Anirudh Manchanda',
+            userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN,
+            createdAt: UniversalFunctions.getTimestamp(),
+            firstLogin: true
         }
     ];
 

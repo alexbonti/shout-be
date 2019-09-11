@@ -524,6 +524,52 @@ var getUser = {
     }
   };
 
+  var createSuperAdmin = {
+    method: "POST",
+    path: "/api/admin/createSuperAdmin",
+    handler: function(request, h) {
+      var userData =
+        (request.auth &&
+          request.auth.credentials &&
+          request.auth.credentials.userData) ||
+        null;
+      var payloadData = request.payload;
+      return new Promise((resolve, reject) => {
+        Controller.AdminBaseController.createSuperAdmin(
+          userData,
+          payloadData,
+          function(err, data) {
+            if (!err) {
+              resolve(UniversalFunctions.sendSuccess(null, data));
+            } else {
+              reject(UniversalFunctions.sendError(err));
+            }
+          }
+        );
+      });
+    },
+    config: {
+      description: "create super admin",
+      tags: ["api", "admin"],
+      auth: "UserAuth",
+      validate: {
+        headers: UniversalFunctions.authorizationHeaderObj,
+        payload: {
+          emailId: Joi.string().required(),
+          fullName: Joi.string()
+            .optional()
+            .allow("")
+        },
+        failAction: UniversalFunctions.failActionFunction
+      },
+      plugins: {
+        "hapi-swagger": {
+          responseMessages:
+            UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+        }
+      }
+    }
+  };
 var AdminBaseRoute = [
   adminLogin,
   accessTokenLogin,
@@ -537,5 +583,6 @@ var AdminBaseRoute = [
   logoutAdmin,
   getAdminSummary,
   getBalance,
+  createSuperAdmin
 ];
 module.exports = AdminBaseRoute;

@@ -174,6 +174,7 @@ var accessTokenLogin = function (userData, callback) {
 
 var createAdmin = function (userData, payloadData, callback) {
   var newAdmin;
+  var adminSummary = [];
   async.series(
     [
       function (cb) {
@@ -204,6 +205,30 @@ var createAdmin = function (userData, payloadData, callback) {
           }
         })
       },
+
+      function (cb) {
+        Service.AdminService.getAdminExtended({
+          adminId : userData._id
+        }, { password: 0, __v: 0, createdAt: 0 }, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminSummary = data && data[0] || null;
+            console.log("!!!!!!!!!!!!!!!!!!!!",adminSummary)
+            cb()
+          }
+        })
+      },
+
+      function(cb){
+        if(adminSummary.companyId == null || adminSummary.companyId == 'undefined')
+        {
+          cb(ERROR.INVALID_COMPANY_ID)
+        }
+        else{
+          cb();
+        }
+      },
+
       function (cb) {
         payloadData.initialPassword = UniversalFunctions.generateRandomString();
         payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
@@ -211,9 +236,8 @@ var createAdmin = function (userData, payloadData, callback) {
         Service.AdminService.createAdmin(payloadData, function (err, data) {
           if (err) cb(err)
           else {
-            newAdmin = data;
-            var adminId = {adminId : newAdmin._id}
-            Service.AdminService.createAdminExteded(adminId, function (err, extendedData)
+            var extData = {adminId : data._id , companyId : adminSummary.companyId}
+            Service.AdminService.createAdminExteded(extData, function (err, extendedData)
             {
               if (err) cb(err)
               else{
@@ -227,7 +251,7 @@ var createAdmin = function (userData, payloadData, callback) {
     ],
     function (err, result) {
       if (err) return callback(err);
-      else return callback(null, { adminDetails: UniversalFunctions.deleteUnnecessaryUserData(newAdmin) });
+      else return callback(null,{});
     }
   );
 };
@@ -662,6 +686,104 @@ var getAdminBalance = function (userData, callback) {
   })
 }
 
+var createSuperAdmin = function (userData, payloadData, callback) {
+  var newAdmin;
+  var dataToPass = {};
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id,
+          emailId : "anirudh.m0009@gmail.com"
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+      function (cb) {
+        var criteria = {
+          emailId: payloadData.emailId
+        }
+        Service.AdminService.getAdmin(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            if (data.length > 0) cb(ERROR.USERNAME_EXIST)
+            else cb()
+          }
+        })
+      },
+      function (cb) {
+        payloadData.initialPassword = UniversalFunctions.generateRandomString();
+        payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
+        payloadData.userType = Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN;
+        Service.AdminService.createAdmin(payloadData, function (err, data) {
+          if (err) cb(err)
+          else {
+            newAdmin = data;
+            completeSuperAdminSignUp(newAdmin._id, function(err,data){
+              if(err) cb(err)
+              else{
+                cb();
+              }
+            })
+          }
+        })
+      }
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { adminDetails: UniversalFunctions.deleteUnnecessaryUserData(newAdmin) });
+    }
+  );
+};
+
+
+var completeSuperAdminSignUp = function(DATA ,callback){
+  var adminSummary = null;
+  var companyDetails = null;
+  async.series([
+    function (cb) {
+      Service.AdminService.createAdminExteded({adminId : DATA}, function(err , data){
+        if(err) cb(err)
+        else{
+          adminSummary = data;
+          cb()
+        }
+      })
+    },
+
+    function(cb){
+      Service.CompanyService.createCompany({superAdminId : DATA}, function(err,data){
+        if(err) cb(err)
+        else{
+          companyDetails = data
+          cb()
+        }
+      })
+    },
+
+    function(cb){
+      Service.AdminService.updateAdminExtended({adminId : DATA} , {$set : {companyId : companyDetails._id}} , {} , function(err, data){
+        if(err) cb(err)
+        else{
+          cb()
+        }
+      })
+    }
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null)
+  })
+}
+
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -674,5 +796,6 @@ module.exports = {
   changePassword: changePassword,
   logoutAdmin: logoutAdmin,
   getAdminExtendedProfile : getAdminExtendedProfile,
-  getAdminBalance : getAdminBalance
+  getAdminBalance : getAdminBalance,
+  createSuperAdmin : createSuperAdmin
 };
