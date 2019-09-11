@@ -204,6 +204,11 @@ var STATUS_MSG = {
       customMessage: "Inavlid Coupon",
       type: "INVALID_COUPON"
     },
+    INVALID_COMPANY_ID: {
+      statusCode: 400,
+      customMessage: "Inavlid Company ID or Company not registered",
+      type: "INVALID_COMPANY_ID"
+    },
   },
   SUCCESS: {
     DEFAULT: {

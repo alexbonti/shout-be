@@ -9,6 +9,7 @@ var adminExtended = new Schema({
     adminId : { type : Schema.ObjectId , ref : 'admin'},
     balance : { type : Number , default : 0},
     shouting : { type : Number , default : 0},
+    companyId : { type : Schema.ObjectId , ref : 'company'},
     recognition : { type : Number , default : 0},
     teamShoutedHistory : [
         {

@@ -8,4 +8,5 @@ module.exports = {
     Admin: require('./admin'),
     AdminExtended : require('./adminExtended'),
     ShoutTransaction : require('./shoutTransaction'),
+    Company : require('./company'),
 };

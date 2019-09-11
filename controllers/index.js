@@ -8,4 +8,5 @@ module.exports = {
   AdminBaseController: require("./adminController/adminBaseController"),
   TopUpBaseController : require("./topUpController/topUpBaseController"),
   ShoutBaseController : require("./shoutController/shoutBaseController"),
+  CompanyBaseController : require("./adminController/companyBaseController")
 };
