@@ -5,6 +5,6 @@ COPY . .
 
 EXPOSE 8000
 
+RUN npm install -g nodemon
 RUN npm install
-
-CMD ["npm","start"]
+RUN cp .env.example .env

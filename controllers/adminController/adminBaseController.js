@@ -49,8 +49,7 @@ var adminLogin = function (payloadData, callback) {
         //validations
         if (!userFound) {
           cb(
-            UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR
-              .EMAIL_NO_EXIST
+            UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR.EMAIL_NO_EXIST
           );
         } else {
           if (

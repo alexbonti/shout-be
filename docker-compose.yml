@@ -1,0 +1,11 @@
+version: '2'
+services: 
+  app:
+    container_name: myshout
+    image: myshout
+    restart: always
+    command: bash -c "nodemon entry.js"
+    ports:
+      - "8000:8000"
+    
+
