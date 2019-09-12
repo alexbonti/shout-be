@@ -229,6 +229,20 @@ var createAdmin = function (userData, payloadData, callback) {
         }
       },
 
+      function(cb){
+        Service.CompanyService.getCompany({_id : adminSummary.companyId} , {} , {} , function(err,data){
+          if(err) cb(err)
+          else{
+            var companyDetails = data && data[0] || null;
+            if(companyDetails.values.length == 0)
+            {
+              cb(ERROR.INVALID_COMPANY_DETAILS)
+            }
+            else cb()
+          }
+        })
+      },
+
       function (cb) {
         payloadData.initialPassword = UniversalFunctions.generateRandomString();
         payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);

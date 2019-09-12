@@ -209,6 +209,11 @@ var STATUS_MSG = {
       customMessage: "Inavlid Company ID or Company not registered",
       type: "INVALID_COMPANY_ID"
     },
+    INVALID_COMPANY_DETAILS: {
+      statusCode: 400,
+      customMessage: "Company Details can not be empty",
+      type: "INVALID_COMPANY_DETAILS"
+    },
   },
   SUCCESS: {
     DEFAULT: {
