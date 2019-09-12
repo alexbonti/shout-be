@@ -50,7 +50,7 @@ var adminLogin = function (payloadData, callback) {
         if (!userFound) {
           cb(
             UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR
-              .EMAIL_NOT_FOUND
+              .EMAIL_NO_EXIST
           );
         } else {
           if (
