@@ -7,12 +7,5 @@ services:
     command: bash -c "nodemon entry.js"
     ports:
       - "8000:8000"
-    links:
-      - mongo_myshout
-  mongo_myshout:
-    container_name: mongo_myshout
-    image: mongo
-    ports:
-      - "27017:27017"
     
 
