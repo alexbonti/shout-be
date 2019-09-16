@@ -11,20 +11,6 @@ var adminExtended = new Schema({
     shouting : { type : Number , default : 0},
     companyId : { type : Schema.ObjectId , ref : 'company'},
     recognition : { type : Number , default : 0},
-    teamShoutedHistory : [
-        {
-            teamName : {type : String },//{type : Schema.ObjectId , ref : 'teams'},
-            credits : { type : Number , default : 0},
-            date : {type : Date}
-        }
-    ],
-    topUpHistory : [
-        {
-            credit : {type : Number},
-            date : {type : Date},
-            note : {type : String}
-        }
-    ]
 });
 
 module.exports = mongoose.model('adminExtended', adminExtended);
