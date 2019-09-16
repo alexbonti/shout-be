@@ -21,7 +21,8 @@ var DATABASE = {
   USER_ROLES: {
     USER: "USER",
     SUPERADMIN: "SUPERADMIN",
-    ADMIN: "ADMIN"
+    ADMIN: "ADMIN",
+    MANAGER: "MANAGER"
   }
 };
 
@@ -213,6 +214,16 @@ var STATUS_MSG = {
       statusCode: 400,
       customMessage: "Company Details can not be empty",
       type: "INVALID_COMPANY_DETAILS"
+    },
+    INVALID_TEAM_ID: {
+      statusCode: 400,
+      customMessage: "Team does not exist",
+      type: "INVALID_TEAM_ID"
+    },
+    INVALID_TEAM_MEMBER: {
+      statusCode: 400,
+      customMessage: "Team member does not exist",
+      type: "INVALID_TEAM_MEMBER"
     },
   },
   SUCCESS: {
