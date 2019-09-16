@@ -120,6 +120,16 @@ var createUser = function(payloadData, callback) {
           }
         });
       },
+      function(cb)
+      {
+        if(customerData)
+        {
+          Service.UserService.createUserExtended({userId : customerData._id},function(err,data){
+            if(err) cb(err)
+            else cb();
+          })
+        }
+      },
       // function (cb) {
       //     //Send SMS to User
       //     if (customerData) {

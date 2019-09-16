@@ -354,6 +354,7 @@ var blockUnblockAdmin = function (userData, payloadData, callback) {
 
 var createUser = function (userData, payloadData, callback) {
   var newUserData;
+  var adminDetails;
   async.series([
     function (cb) {
       var criteria = {
@@ -369,6 +370,17 @@ var createUser = function (userData, payloadData, callback) {
           }
         }
       });
+    },
+    function(cb){
+      if(userFound){
+        Service.AdminService.getAdminExtended({adminId : userFound._id},{},{},function(err,data){
+          if(err) cb(err)
+          else{
+            adminDetails = data && data[0] || null;
+            cb();
+          }
+        })
+      }
     },
     function (cb) {
       Service.UserService.getUser({ emailId: payloadData.emailId }, {}, {}, function (err, data) {
@@ -390,7 +402,26 @@ var createUser = function (userData, payloadData, callback) {
           cb()
         }
       })
-    }
+    },
+    function(cb){
+      if(adminDetails.companyId == null || adminDetails.companyId == 'undefined')
+      {
+        cb(ERROR.INVALID_COMPANY_ID)
+      }
+      else{
+        cb();
+      }
+    },
+    function(cb)
+      {
+        if(newUserData)
+        {
+          Service.UserService.createUserExtended({userId : newUserData._id , companyId : adminDetails.companyId},function(err,data){
+            if(err) cb(err)
+            else cb();
+          })
+        }
+      },
   ], function (err, result) {
     if (err) callback(err)
     else callback(null, { userData: UniversalFunctions.deleteUnnecessaryUserData(newUserData) })

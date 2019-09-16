@@ -9,4 +9,7 @@ module.exports = {
     AdminExtended : require('./adminExtended'),
     ShoutTransaction : require('./shoutTransaction'),
     Company : require('./company'),
+    UserExtended : require('./userExtended'),
+    Team : require('./team'),
+    TopUpTransaction : require('./topUp')
 };

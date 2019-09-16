@@ -25,6 +25,26 @@ var getUser = function(criteria, projection, options, callback) {
   Models.User.find(criteria, projection, options, callback);
 };
 
+var updateUserExtended = function(criteria, dataToSet, options, callback) {
+  options.lean = true;
+  options.new = true;
+  Models.UserExtended.findOneAndUpdate(criteria, dataToSet, options, callback);
+};
+//Insert User in DB
+var createUserExtended = function(objToSave, callback) {
+  new Models.UserExtended(objToSave).save(callback);
+};
+//Delete User in DB
+var deleteUserExtended = function(criteria, callback) {
+  Models.UserExtended.findOneAndRemove(criteria, callback);
+};
+
+//Get Users from DB
+var getUserExtended = function(criteria, projection, options, callback) {
+  options.lean = true;
+  Models.UserExtended.find(criteria, projection, options, callback);
+};
+
 var getUserPromise = function(criteria, projection, options) {
   options.lean = true;
   return new Promise((resolve, reject) => {
@@ -66,5 +86,9 @@ module.exports = {
   deleteUser: deleteUser,
   getUser: getUser,
   getAllGeneratedCodes: getAllGeneratedCodes,
-  getUserPromise: getUserPromise
+  getUserPromise: getUserPromise,
+  updateUserExtended : updateUserExtended,
+  createUserExtended : createUserExtended,
+  deleteUserExtended: deleteUserExtended,
+  getUserExtended : getUserExtended
 };
