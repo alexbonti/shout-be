@@ -11,7 +11,10 @@ var company = new Schema({
   contactEmail: {type: String, unique: true, sparse: true},
   companyDescription : { type : String , trim : true},
   values: [
-    { type: String, trim: true}
+    {
+      name:  { type: String, trim: true},
+      description:  { type: String, trim: true}
+    }
   ]
 });
 

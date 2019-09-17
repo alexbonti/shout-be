@@ -91,7 +91,12 @@ var updateCompany = {
                 businessPhoneNumber: Joi.string().regex(/^[0-9]{10}$/).trim().min(2).required(),
                 contactEmail: Joi.string().required(),
                 companyDescription: Joi.string().required(),
-                values: Joi.array().required()
+                values: [
+                    {
+                        name: Joi.string().required(),
+                        description : Joi.string().required()
+                    }
+                ]
             },
             failAction: UniversalFunctions.failActionFunction
         },
