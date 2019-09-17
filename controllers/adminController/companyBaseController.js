@@ -101,6 +101,8 @@ var updateCompany = function (userData, payloadData, callback) {
                         businessPhoneNumber: payloadData.businessPhoneNumber,
                         contactEmail: payloadData.contactEmail,
                         companyDescription: payloadData.companyDescription,
+                    },
+                    $addToSet : {
                         values: payloadData.values
                     }
                 };
