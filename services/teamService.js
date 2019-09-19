@@ -22,9 +22,28 @@ var updateTeam = function(criteria, dataToSet, options, callback) {
     Models.Team.find(criteria, projection, options, callback);
   };
 
+  var getPopulatedUserDetails = function(
+    criteria,
+    projection,
+    populate,
+    sortOptions,
+    setOptions,
+    callback
+  ) {
+    console.log("ok........", criteria, projection, populate);
+    Models.Team.find(criteria)
+      .select(projection)
+      .populate(populate)
+      .sort(sortOptions)
+      .exec(function(err, result) {
+        callback(err, result);
+      });
+  };
+
   module.exports = {
       updateTeam : updateTeam,
       createTeam : createTeam,
       deleteTeam : deleteTeam,
-      getTeam : getTeam
+      getTeam : getTeam,
+      getPopulatedUserDetails : getPopulatedUserDetails
   }

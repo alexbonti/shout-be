@@ -36,6 +36,7 @@ var createTeam = {
             payload: {
                 teamName: Joi.string().required(),
                 location: Joi.string().required(),
+                managerIds : Joi.array().required(),
             },
             failAction: UniversalFunctions.failActionFunction
         },

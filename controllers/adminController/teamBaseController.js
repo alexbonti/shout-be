@@ -104,19 +104,34 @@ var getTeams = function (userData, callback) {
             },
 
             function (cb) {
-                Service.TeamService.getTeam({ adminId: userFound._id }, { __v: 0 }, {}, function (err, data) {
-                    if (err) cb(err)
-                    else {
-                        if (data.length == 0) cb(null)
-                        else {
-                            teamDetails = data && data[0] || null;
-                            var totalMembers = teamDetails.managerIds.length + teamDetails.userIds.length;
-                            teamDetails.numberOfMembers = totalMembers;
-                            cb();
-                        }
-                    }
-                })
-            }
+                var path = "managerIds";
+                var select = "firstName lastName";
+                var populate = {
+                  path: path,
+                  match: {},
+                  select: select,
+                  options: {
+                    lean: true
+                  }
+                };
+                var projection = {
+                  __v: 0,
+                  codeUpdatedAt: 0,
+                  withdrawDate: 0,
+                  candidateId: 0
+                };
+        
+                Service.TeamService.getPopulatedUserDetails({
+                    adminId: userFound._id
+                }, projection, populate, {}, {}, function (err, data) {
+                  if (err) {
+                    cb(err);
+                  } else {
+                    teamDetails = data;
+                    cb();
+                  }
+                });
+              }
 
         ],
         function (err, result) {
