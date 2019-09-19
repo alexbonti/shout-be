@@ -85,6 +85,7 @@ var createTeam = function (userData, payloadData, callback) {
 var getTeams = function (userData, callback) {
     var teamDetails;
     var adminSummary = [];
+    var teams = [];
     async.series(
         [
             function (cb) {
@@ -116,9 +117,6 @@ var getTeams = function (userData, callback) {
                 };
                 var projection = {
                     __v: 0,
-                    codeUpdatedAt: 0,
-                    withdrawDate: 0,
-                    candidateId: 0
                 };
 
                 Service.TeamService.getPopulatedUserDetails({
@@ -132,12 +130,33 @@ var getTeams = function (userData, callback) {
                         cb();
                     }
                 });
+            },
+
+            function (cb) {
+                if (teamDetails) {
+                    var taskInParallel = [];
+                    for (var key in teamDetails) {
+                        (function (key) {
+                            taskInParallel.push((function (key) {
+                                return function (embeddedCB) {
+                                   var total = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+                                   teams.push({team : teamDetails[key], totalMembers : total});
+                                   console.log(">>>>>>>>>>>>>",total)
+                                   embeddedCB()
+                                }
+                            })(key))
+                        }(key));
+                    }
+                    async.parallel(taskInParallel, function (err, result) {
+                        cb(null);
+                    });
+                }
             }
 
         ],
         function (err, result) {
             if (err) return callback(err);
-            else return callback(null, { data: teamDetails });
+            else return callback(null, { data: teams });
         }
     );
 };
