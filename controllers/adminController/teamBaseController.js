@@ -104,34 +104,35 @@ var getTeams = function (userData, callback) {
             },
 
             function (cb) {
-                var path = "managerIds";
+                var path = "managerIds userIds";
                 var select = "firstName lastName";
                 var populate = {
-                  path: path,
-                  match: {},
-                  select: select,
-                  options: {
-                    lean: true
-                  }
+                    path: path,
+                    match: {},
+                    select: select,
+                    options: {
+                        lean: true
+                    }
                 };
                 var projection = {
-                  __v: 0,
-                  codeUpdatedAt: 0,
-                  withdrawDate: 0,
-                  candidateId: 0
+                    __v: 0,
+                    codeUpdatedAt: 0,
+                    withdrawDate: 0,
+                    candidateId: 0
                 };
-        
+
                 Service.TeamService.getPopulatedUserDetails({
-                    adminId: userFound._id
+                    adminId: userFound._id,
+                    isActive: true
                 }, projection, populate, {}, {}, function (err, data) {
-                  if (err) {
-                    cb(err);
-                  } else {
-                    teamDetails = data;
-                    cb();
-                  }
+                    if (err) {
+                        cb(err);
+                    } else {
+                        teamDetails = data;
+                        cb();
+                    }
                 });
-              }
+            }
 
         ],
         function (err, result) {
@@ -180,6 +181,63 @@ var updateTeam = function (userData, payloadData, callback) {
                     $set: {
                         teamName: payloadData.teamName,
                         location: payloadData.location
+                    }
+                }
+                Service.TeamService.updateTeam({ _id: teamDetails._id }, dataToUpdate, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        teamDetails = data[0];
+                        cb();
+                    }
+                })
+            }
+
+        ],
+        function (err, result) {
+            if (err) return callback(err);
+            else return callback(null, { data: teamDetails });
+        }
+    );
+};
+
+var deleteTeam = function (userData, payloadData, callback) {
+    var teamDetails;
+    var adminSummary = [];
+    async.series(
+        [
+            function (cb) {
+                var criteria = {
+                    _id: userData._id
+                };
+                Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                    if (err) cb(err);
+                    else {
+                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        else {
+                            userFound = (data && data[0]) || null;
+                            cb();
+                        }
+                    }
+                });
+            },
+
+            function (cb) {
+                Service.TeamService.getTeam({ adminId: userFound._id, _id: payloadData.teamId, isActive: true }, { _v: 0 }, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        if (data.length == 0) cb(ERROR.INVALID_TEAM_ID)
+                        else {
+                            teamDetails = data && data[0] || null;
+                            cb();
+                        }
+                    }
+                })
+            },
+
+            function (cb) {
+                dataToUpdate = {
+                    $set: {
+                        isActive: false
                     }
                 }
                 Service.TeamService.updateTeam({ _id: teamDetails._id }, dataToUpdate, {}, function (err, data) {
@@ -579,5 +637,6 @@ module.exports = {
     addManagersToTeam: addManagersToTeam,
     promoteUserToManager: promoteUserToManager,
     demoteManagerToUser: demoteManagerToUser,
-    removeMemberFromTeam: removeMemberFromTeam
+    removeMemberFromTeam: removeMemberFromTeam,
+    deleteTeam: deleteTeam
 }

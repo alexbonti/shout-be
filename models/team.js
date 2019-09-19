@@ -16,6 +16,7 @@ var team = new Schema({
     adminId: { type: Schema.ObjectId, ref: 'admin' },
     location: { type: String, trim: true },
     companyId: { type: Schema.ObjectId, ref: 'company' },
+    isActive: { type: Boolean, default: true}
 });
 
 module.exports = mongoose.model('team', team);

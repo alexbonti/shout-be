@@ -135,6 +135,50 @@ var updateTeam = {
     }
 };
 
+var deleteTeam = {
+    method: "DELETE",
+    path: "/api/admin/deleteTeam",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.TeamBaseController.deleteTeam(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "delete team",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                teamId: Joi.string().required(),
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
 var addUsersToTeam = {
     method: "PUT",
     path: "/api/admin/addUsersToTeam",
@@ -368,5 +412,6 @@ module.exports = [
     addManagersToTeam,
     promoteUserToManager,
     demoteManagerToUser,
-    removeMemberFromTeam
+    removeMemberFromTeam,
+    deleteTeam
 ]
