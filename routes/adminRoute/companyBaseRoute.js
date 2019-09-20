@@ -94,7 +94,7 @@ var updateCompany = {
                 values: Joi.array().items(
                     {
                         name: Joi.string().required(),
-                        description : Joi.string().required()
+                        description: Joi.string().required()
                     }
                 ).required(),
             },
@@ -108,6 +108,149 @@ var updateCompany = {
         }
     }
 };
+
+
+var addValuesToCompany = {
+    method: "PUT",
+    path: "/api/admin/addValuesToCompany",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.CompanyBaseController.addValuesToCompany(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "add Values To Company",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                values: Joi.array().items(
+                    {
+                        name: Joi.string().required(),
+                        description: Joi.string().required()
+                    }
+                ).required(),
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
+var editValuesOfCompany = {
+    method: "PUT",
+    path: "/api/admin/editValuesOfCompany",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.CompanyBaseController.editValuesOfCompany(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "edit Values of Company",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                valuesId: Joi.string().required(),
+                name: Joi.string().required(),
+                description: Joi.string().required()
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
+var removeValueFromCompany = {
+    method: "DELETE",
+    path: "/api/admin/removeValueFromCompany",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.CompanyBaseController.removeValueFromCompany(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "remove Value From Company",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                valuesId: Joi.string().required(),
+                // name: Joi.string().required(),
+                // description: Joi.string().required()
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
 
 var getCompany = {
     method: "GET",
@@ -151,5 +294,8 @@ var getCompany = {
 module.exports = [
     //createCompany,
     updateCompany,
-    getCompany
+    getCompany,
+    addValuesToCompany,
+    editValuesOfCompany,
+    removeValueFromCompany
 ]
