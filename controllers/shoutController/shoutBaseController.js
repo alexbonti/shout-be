@@ -12,7 +12,11 @@ var NodeMailer = require("../../lib/nodeMailer");
 
 var createShout = function (userData, payloadData, callback) {
   var adminSummary = null;
+  var teamDetails = null;
+  var totalMembers = 0;
+  var teamMemberIds = [];
   var numberOfPeople = 0;
+  var transactionIds = [];
   var shouting = 0;
   var DATA = {};
   var dataToSend = [];
@@ -70,13 +74,12 @@ var createShout = function (userData, payloadData, callback) {
         accessToken: 0,
       }
 
-      if (payloadData.userId) {
+      if (payloadData.teamSkip == true) {
         var taskInParallel = [];
         for (var key in payloadData.userId) {
           (function (key) {
             taskInParallel.push((function (key) {
               return function (embeddedCB) {
-                //TODO
                 Service.UserService.getUser({
                   _id: payloadData.userId[key]
                 }, {}, {
@@ -99,7 +102,7 @@ var createShout = function (userData, payloadData, callback) {
                       DATA = {};
                       numberOfPeople += 1;
                     }
-                    else{
+                    else {
                       DATA.receiverId = data[0]._id;
                       DATA.receiversName = data[0].firstName;
                       DATA.receiversEmail = data[0].emailId;
@@ -119,10 +122,104 @@ var createShout = function (userData, payloadData, callback) {
           cb(null);
         });
       } else {
-        cb();
+        Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            teamDetails = data;
+            cb();
+          }
+        })
       }
     },
 
+    function (cb) {
+
+      if (teamDetails) {
+        console.log("team")
+        var taskInParallel = [];
+        for (var key in teamDetails) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+                totalMembers = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+                if (payloadData.credits > 0 && amount >= (payloadData.credits * totalMembers)) {
+                  for (var x in teamDetails[key].managerIds) {
+                    teamMemberIds.push(teamDetails[key].managerIds[x]);
+                  }
+                  for (var y in teamDetails[key].userIds) {
+                    teamMemberIds.push(teamDetails[key].userIds[y]);
+                  }
+                  embeddedCB()
+                }
+                else {
+                  cb(ERROR.INVALID_AMOUNT)
+                }
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      }
+      else {
+        cb()
+      }
+    },
+
+    function (cb) {
+      if (teamDetails) {
+        var taskInParallel = [];
+        for (var key in teamMemberIds) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+                Service.UserService.getUser({
+                  _id: teamMemberIds[key]
+                }, {}, {
+                  lean: true
+                }, function (err, data) {
+                  if (err) {
+                    embeddedCB(err)
+                  } else {
+
+                    if (payloadData.credits > 0 && amount >= payloadData.credits) {
+                      amount -= payloadData.credits;
+                      DATA.adminName = userFound.fullName;
+                      DATA.receiverId = data[0]._id;
+                      DATA.receiversName = data[0].firstName;
+                      DATA.receiversEmail = data[0].emailId;
+                      DATA.credits = payloadData.credits;
+                      DATA.message = payloadData.message;
+                      console.log(DATA);
+                      dataToSend.push(DATA);
+                      DATA = {};
+                      numberOfPeople += 1;
+                    }
+                    else {
+                      DATA.receiverId = data[0]._id;
+                      DATA.receiversName = data[0].firstName;
+                      DATA.receiversEmail = data[0].emailId;
+                      DATA.credits = payloadData.credits;
+                      DATA.message = payloadData.message;
+                      dataNotSent.push(DATA);
+                      DATA = {};
+                    }
+                    embeddedCB()
+                  }
+                })
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      }
+      else {
+        cb()
+      }
+    },
 
 
     function (cb) {
@@ -155,7 +252,8 @@ var createShout = function (userData, payloadData, callback) {
                       receiverId: dataToSend[key].receiverId,
                       emailId: dataToSend[key].receiversEmail,
                       credits: dataToSend[key].credits,
-                      message: dataToSend[key].message
+                      message: dataToSend[key].message,
+                      date: Date.now()
                     }
                     //TODO
                     Service.ShoutTransaction.createShoutTransaction(dataToCreate, function (err, transData) {
@@ -163,6 +261,7 @@ var createShout = function (userData, payloadData, callback) {
                         embeddedCB(err)
                       } else {
                         console.log("!!!!!!!!!!!!!!!!!!!!!!", dataToSend[key])
+                        transactionIds.push(transData._id)
                         dataToSend[key].redeemLink = "Somelink/" + transData._id;
                         console.log(dataToSend[key].redeemLink)
                         console.log("data : ", dataToSend[key])
@@ -178,17 +277,45 @@ var createShout = function (userData, payloadData, callback) {
               cb(null);
             });
           }
-
+          else {
+            cb();
+          }
         }
       })
     },
+
+    function (cb) {
+      if (dataToSend.length > 0) {
+        objToSave = {
+          adminId: userData._id,
+          teamId: payloadData.teamId,
+          transactionIds: transactionIds,
+          values: payloadData.values,
+          creditsToEach: payloadData.credits,
+          creditsInTotal: shouting,
+          date: Date.now()
+        }
+
+        Service.ShoutedTeamHistoryService.createshoutedTeamHistory(objToSave, function (err, data) {
+          if (err) cb(err)
+          else {
+            cb();
+          }
+        })
+      }
+      else{
+        cb();
+      }
+    }
+
+
   ], function (err, result) {
     if (err) callback(err)
     else callback(null, {
       numberOfPeople,
       shouting,
       dataToSend,
-      dataNotSent
+      dataNotSent,
     })
   })
 }
@@ -201,21 +328,21 @@ var getShoutTransaction = function (payloadData, callback) {
     function (cb) {
       var criteria = {
         _id: payloadData.transactionId,
-        redeemed : false
+        redeemed: false
       };
       Service.ShoutTransaction.getShoutTransaction(criteria, {
         __v: 0
       }, {}, function (err, data) {
         if (err) cb(err)
         else {
-          if(data.length == 0){
+          if (data.length == 0) {
             cb(ERROR.INVALID_COUPON)
           }
-          else{
+          else {
             transData = data;
             cb()
           }
-          
+
         }
       })
     }
@@ -237,18 +364,17 @@ var redeemTransaction = function (payloadData, callback) {
     function (cb) {
       var criteria = {
         _id: payloadData.transactionId,
-        redeemed : false
+        redeemed: false
       };
       Service.ShoutTransaction.getShoutTransaction(criteria, {
         __v: 0
       }, {}, function (err, data) {
         if (err) cb(err)
         else {
-          if(data.length == 0)
-          {
+          if (data.length == 0) {
             cb(ERROR.INVALID_COUPON)
           }
-          else{
+          else {
             transData = data && data[0] || null;
             cb()
           }
@@ -256,29 +382,29 @@ var redeemTransaction = function (payloadData, callback) {
       })
     },
 
-    function(cb){
-      if(payloadData.amount == transData.credits){
-        Service.ShoutTransaction.updateShoutTransaction({_id : payloadData.transactionId}, {redeemed : true},{}, function (err , data){
-          if(err) cb(err)
-          else{
+    function (cb) {
+      if (payloadData.amount == transData.credits) {
+        Service.ShoutTransaction.updateShoutTransaction({ _id: payloadData.transactionId }, { redeemed: true }, {}, function (err, data) {
+          if (err) cb(err)
+          else {
             cb()
           }
         })
       }
-      else if(payloadData.amount < transData.credits){
+      else if (payloadData.amount < transData.credits) {
 
         var dataToPass = {
-          transactionId : payloadData.transactionId,
-          adminId : transData.adminId,
-          credits : transData.credits,
-          amountSpent : payloadData.amount
+          transactionId: payloadData.transactionId,
+          adminId: transData.adminId,
+          credits: transData.credits,
+          amountSpent: payloadData.amount
         }
 
-        concludeTransaction(dataToPass,function(err,data){
+        concludeTransaction(dataToPass, function (err, data) {
           cb()
         })
       }
-      else{
+      else {
         cb(ERROR.INVALID_AMOUNT)
       }
     }
@@ -290,35 +416,34 @@ var redeemTransaction = function (payloadData, callback) {
   })
 }
 
-var concludeTransaction = function(DATA ,callback){
+var concludeTransaction = function (DATA, callback) {
   var adminSummary = null;
 
   async.series([
     function (cb) {
-      Service.AdminService.getAdminExtended({_id : DATA.adminId}, {} , {} , function(err , data){
-        if(err) cb(err)
-        else{
+      Service.AdminService.getAdminExtended({ _id: DATA.adminId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
           adminSummary = data && data[0] || null;
           cb()
         }
       })
     },
 
-    function(cb){
-      Service.ShoutTransaction.updateShoutTransaction({_id : DATA.transactionId} , {$set : {redeemed : true}} , {} , function(err, data){
-        if(err) cb(err)
-        else{
-            cb()
+    function (cb) {
+      Service.ShoutTransaction.updateShoutTransaction({ _id: DATA.transactionId }, { $set: { redeemed: true } }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          cb()
         }
       })
     },
 
-    function(cb)
-    {
+    function (cb) {
       var amount = adminSummary.balance + DATA.credits - DATA.amountSpent;
-      Service.AdminService.updateAdminExtended({_id : DATA.adminId} , {$set : { balance : amount }} , {} , function(err , data){
-        if(err) cb(err)
-        else{
+      Service.AdminService.updateAdminExtended({ _id: DATA.adminId }, { $set: { balance: amount } }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
           adminSummary = data;
           cb()
         }
@@ -335,5 +460,5 @@ var concludeTransaction = function(DATA ,callback){
 module.exports = {
   createShout: createShout,
   getShoutTransaction: getShoutTransaction,
-  redeemTransaction : redeemTransaction
+  redeemTransaction: redeemTransaction
 }
