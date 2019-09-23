@@ -207,34 +207,32 @@ var createAdmin = function (userData, payloadData, callback) {
 
       function (cb) {
         Service.AdminService.getAdminExtended({
-          adminId : userData._id
+          adminId: userData._id
         }, { password: 0, __v: 0, createdAt: 0 }, {}, function (err, data) {
           if (err) cb(err)
           else {
             adminSummary = data && data[0] || null;
-            console.log("!!!!!!!!!!!!!!!!!!!!",adminSummary)
+            console.log("!!!!!!!!!!!!!!!!!!!!", adminSummary)
             cb()
           }
         })
       },
 
-      function(cb){
-        if(adminSummary.companyId == null || adminSummary.companyId == 'undefined')
-        {
+      function (cb) {
+        if (adminSummary.companyId == null || adminSummary.companyId == 'undefined') {
           cb(ERROR.INVALID_COMPANY_ID)
         }
-        else{
+        else {
           cb();
         }
       },
 
-      function(cb){
-        Service.CompanyService.getCompany({_id : adminSummary.companyId} , {} , {} , function(err,data){
-          if(err) cb(err)
-          else{
+      function (cb) {
+        Service.CompanyService.getCompany({ _id: adminSummary.companyId }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
             var companyDetails = data && data[0] || null;
-            if(companyDetails.values.length == 0)
-            {
+            if (companyDetails.values.length == 0) {
               cb(ERROR.INVALID_COMPANY_DETAILS)
             }
             else cb()
@@ -249,22 +247,21 @@ var createAdmin = function (userData, payloadData, callback) {
         Service.AdminService.createAdmin(payloadData, function (err, data) {
           if (err) cb(err)
           else {
-            var extData = {adminId : data._id , companyId : adminSummary.companyId}
-            Service.AdminService.createAdminExteded(extData, function (err, extendedData)
-            {
+            var extData = { adminId: data._id, companyId: adminSummary.companyId }
+            Service.AdminService.createAdminExteded(extData, function (err, extendedData) {
               if (err) cb(err)
-              else{
+              else {
                 cb()
               }
             })
           }
         })
       }
-      
+
     ],
     function (err, result) {
       if (err) return callback(err);
-      else return callback(null,{});
+      else return callback(null, {});
     }
   );
 };
@@ -371,11 +368,11 @@ var createUser = function (userData, payloadData, callback) {
         }
       });
     },
-    function(cb){
-      if(userFound){
-        Service.AdminService.getAdminExtended({adminId : userFound._id},{},{},function(err,data){
-          if(err) cb(err)
-          else{
+    function (cb) {
+      if (userFound) {
+        Service.AdminService.getAdminExtended({ adminId: userFound._id }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
             adminDetails = data && data[0] || null;
             cb();
           }
@@ -403,25 +400,22 @@ var createUser = function (userData, payloadData, callback) {
         }
       })
     },
-    function(cb){
-      if(adminDetails.companyId == null || adminDetails.companyId == 'undefined')
-      {
+    function (cb) {
+      if (adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
         cb(ERROR.INVALID_COMPANY_ID)
       }
-      else{
+      else {
         cb();
       }
     },
-    function(cb)
-      {
-        if(newUserData)
-        {
-          Service.UserService.createUserExtended({userId : newUserData._id , companyId : adminDetails.companyId},function(err,data){
-            if(err) cb(err)
-            else cb();
-          })
-        }
-      },
+    function (cb) {
+      if (newUserData) {
+        Service.UserService.createUserExtended({ userId: newUserData._id, companyId: adminDetails.companyId }, function (err, data) {
+          if (err) cb(err)
+          else cb();
+        })
+      }
+    },
   ], function (err, result) {
     if (err) callback(err)
     else callback(null, { userData: UniversalFunctions.deleteUnnecessaryUserData(newUserData) })
@@ -680,7 +674,7 @@ var getAdminExtendedProfile = function (userData, callback) {
     },
     function (cb) {
       Service.AdminService.getAdminExtended({
-        adminId : userData._id
+        adminId: userData._id
       }, { password: 0, __v: 0, createdAt: 0 }, {}, function (err, data) {
         if (err) cb(err)
         else {
@@ -691,7 +685,7 @@ var getAdminExtendedProfile = function (userData, callback) {
     }
   ], function (err, result) {
     if (err) callback(err)
-    else callback(null, { data : adminSummary })
+    else callback(null, { data: adminSummary })
   })
 }
 
@@ -715,7 +709,7 @@ var getAdminBalance = function (userData, callback) {
     },
     function (cb) {
       Service.AdminService.getAdminExtended({
-        adminId : userData._id
+        adminId: userData._id
       }, { password: 0, __v: 0, createdAt: 0 }, {}, function (err, data) {
         if (err) cb(err)
         else {
@@ -726,7 +720,7 @@ var getAdminBalance = function (userData, callback) {
     }
   ], function (err, result) {
     if (err) callback(err)
-    else callback(null, { balance : adminBalance })
+    else callback(null, { balance: adminBalance })
   })
 }
 
@@ -738,7 +732,7 @@ var createSuperAdmin = function (userData, payloadData, callback) {
       function (cb) {
         var criteria = {
           _id: userData._id,
-          emailId : "anirudh.m0009@gmail.com"
+          emailId: "anirudh.m0009@gmail.com"
         };
         Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
           if (err) cb(err);
@@ -772,9 +766,9 @@ var createSuperAdmin = function (userData, payloadData, callback) {
           if (err) cb(err)
           else {
             newAdmin = data;
-            completeSuperAdminSignUp(newAdmin._id, function(err,data){
-              if(err) cb(err)
-              else{
+            completeSuperAdminSignUp(newAdmin._id, function (err, data) {
+              if (err) cb(err)
+              else {
                 cb();
               }
             })
@@ -790,34 +784,34 @@ var createSuperAdmin = function (userData, payloadData, callback) {
 };
 
 
-var completeSuperAdminSignUp = function(DATA ,callback){
+var completeSuperAdminSignUp = function (DATA, callback) {
   var adminSummary = null;
   var companyDetails = null;
   async.series([
     function (cb) {
-      Service.AdminService.createAdminExteded({adminId : DATA}, function(err , data){
-        if(err) cb(err)
-        else{
+      Service.AdminService.createAdminExteded({ adminId: DATA }, function (err, data) {
+        if (err) cb(err)
+        else {
           adminSummary = data;
           cb()
         }
       })
     },
 
-    function(cb){
-      Service.CompanyService.createCompany({superAdminId : DATA}, function(err,data){
-        if(err) cb(err)
-        else{
+    function (cb) {
+      Service.CompanyService.createCompany({ superAdminId: DATA }, function (err, data) {
+        if (err) cb(err)
+        else {
           companyDetails = data
           cb()
         }
       })
     },
 
-    function(cb){
-      Service.AdminService.updateAdminExtended({adminId : DATA} , {$set : {companyId : companyDetails._id}} , {} , function(err, data){
-        if(err) cb(err)
-        else{
+    function (cb) {
+      Service.AdminService.updateAdminExtended({ adminId: DATA }, { $set: { companyId: companyDetails._id } }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
           cb()
         }
       })
@@ -825,6 +819,306 @@ var completeSuperAdminSignUp = function(DATA ,callback){
   ], function (err, result) {
     if (err) callback(err)
     else callback(null)
+  })
+}
+
+var getAdminTeamShoutedHistory = function (userData, callback) {
+  var history = null;
+  var mostRecognised = [];
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb();
+          }
+        }
+      });
+    },
+
+    function (cb) {
+      var path = "teamId";
+      var select = "teamName";
+      var populate = {
+        path: path,
+        match: {},
+        select: select,
+        options: {
+          lean: true
+        }
+      };
+      var projection = {
+        __v: 0,
+      };
+
+      Service.ShoutedTeamHistoryService.getPopulatedTeamDetails({
+        adminId: userData._id,
+      }, projection, populate, {}, {}, function (err, data) {
+        if (err) {
+          cb(err);
+        } else {
+          history = data
+          cb();
+        }
+      });
+    },
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data: history })
+  })
+}
+
+var getMostRecognisedTeam = function (userData, callback) {
+  var history = null;
+  var mostRecognised = [];
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb();
+          }
+        }
+      });
+    },
+    function (cb) {
+      criteria = [
+        {
+          $match: {
+            adminId: userFound._id,
+          }
+        }, {
+          $group: {
+            _id: '$teamId',
+            total: {
+              $sum: '$creditsInTotal'
+            },
+          },
+        },
+        {
+          $project: {
+            teams: {
+              $gte: ['$total', 80]
+            }
+          }
+        }
+      ]
+      Service.ShoutedTeamHistoryService.getAggregateShoutedTeamHistory(criteria, function (err, data) {
+        if (err) cb(err)
+        else {
+          console.log(data)
+          history = data;
+          history = _.where(history, { teams: true })
+          cb();
+        }
+      })
+    },
+
+    function (cb) {
+      if (history.length != 0) {
+        var taskInParallel = [];
+        for (var key in history) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+
+                Service.TeamService.getTeam({ adminId: userFound._id, _id: history[key]._id }, {}, {}, function (err, data) {
+                  if (err) cb(err)
+                  else {
+                    var temp = {};
+                    temp._id = data[0]._id;
+                    temp.teamName = data[0].teamName
+                    mostRecognised.push(temp);
+                    embeddedCB()
+                  }
+                })
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      }
+      else {
+        cb()
+      }
+    }
+    // function (cb) {
+    //   var obj;
+    //   Math.max(Math.max.apply(Math, history.map(function (o) { return o.total, obj = o; })))
+    //   mostRecognised._id = obj._id;
+    //   mostRecognised.total = obj.total
+    //   cb();
+    // },
+
+    // function (cb) {
+    //   Service.TeamService.getTeam({ _id: mostRecognised._id }, {}, {}, function (err, data) {
+    //     if (err) cb(err)
+    //     else {
+    //       mostRecognised.teamName = data[0].teamName;
+    //       cb();
+    //     }
+    //   })
+    // }
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data: mostRecognised })
+  })
+}
+
+var getTeamNeedsAttention = function (userData, callback) {
+  var missingIds = null;
+  var teamsData;
+  var teamIds = [];
+  var allTeamIds = [];
+  var newTeamIds = [];
+  var teamIdsNotFound = [];
+  var mostRecognised = {};
+  var teamNeedsAttention = [];
+  var teams = [];
+  var temp = {};
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb();
+          }
+        }
+      });
+    },
+
+    function (cb) {
+      Service.TeamService.getTeam({ adminId: userFound._id }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if (data.length == 0) {
+            cb(null)
+          }
+          else {
+            for (x in data) { teamIds.push(data[x]._id) }
+            _.map(teamIds, function (e) { allTeamIds.push(String(e)) })
+            console.log("!>!>!>!>", teamIds)
+            cb();
+          }
+
+        }
+      })
+    },
+
+    function (cb) {
+      criteria = [
+        {
+          $match: {
+            adminId: userFound._id
+          }
+        }, { "$group": { "_id": null, "ids": { "$addToSet": "$teamId" } } },
+        { "$project": { "missingIds": { "$setDifference": [teamIds, "$ids"] } } }
+      ]
+      Service.ShoutedTeamHistoryService.getAggregateShoutedTeamHistory(criteria, function (err, data) {
+        if (err) cb(err)
+        else {
+          missingIds = data[0].missingIds
+          _.map(missingIds, function (e) { teamIdsNotFound.push(String(e)) })
+          cb();
+        }
+      })
+    },
+
+    function (cb) {
+      newTeamIds = _.difference(allTeamIds, teamIdsNotFound)
+      cb();
+    },
+
+    function (cb) {
+      if (newTeamIds) {
+        var taskInParallel = [];
+        for (var key in newTeamIds) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+                criteria = {
+                  adminId: userFound._id,
+                  teamId: newTeamIds[key],
+                  date: { $gte: new Date(Date.now() - 1000 * 86400 * 45) }
+                }
+                Service.ShoutedTeamHistoryService.getShoutedTeamHistory(criteria, {}, {}, function (err, data) {
+                  if (err) cb(err)
+                  else {
+                    if (data.length == 0) {
+                      teamNeedsAttention.push(newTeamIds[key])
+                    }
+                    embeddedCB()
+                  }
+                })
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      }
+      else {
+        cb()
+      }
+    },
+
+    function (cb) {
+      _.map(teamIdsNotFound, function (e) { teamNeedsAttention.push(e) })
+      console.log(teamNeedsAttention)
+      if (teamNeedsAttention) {
+        var taskInParallel = [];
+        for (var key in teamNeedsAttention) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+                Service.TeamService.getTeam({ _id: teamNeedsAttention[key] }, {}, {}, function (err, data) {
+                  if (err) cb(err)
+                  else {
+                    temp._id = teamNeedsAttention[key]
+                    temp.teamName = data[0].teamName;
+                    teams.push(temp);
+                    temp = {}
+                    embeddedCB()
+                  }
+                })
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      }
+      else {
+        cb()
+      }
+    }
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data: teams })
   })
 }
 
@@ -839,7 +1133,10 @@ module.exports = {
   blockUnblockUser: blockUnblockUser,
   changePassword: changePassword,
   logoutAdmin: logoutAdmin,
-  getAdminExtendedProfile : getAdminExtendedProfile,
-  getAdminBalance : getAdminBalance,
-  createSuperAdmin : createSuperAdmin
+  getAdminExtendedProfile: getAdminExtendedProfile,
+  getAdminBalance: getAdminBalance,
+  createSuperAdmin: createSuperAdmin,
+  getAdminTeamShoutedHistory: getAdminTeamShoutedHistory,
+  getMostRecognisedTeam: getMostRecognisedTeam,
+  getTeamNeedsAttention: getTeamNeedsAttention
 };

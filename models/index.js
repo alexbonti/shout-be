@@ -11,5 +11,6 @@ module.exports = {
     Company : require('./company'),
     UserExtended : require('./userExtended'),
     Team : require('./team'),
-    TopUpTransaction : require('./topUp')
+    TopUpTransaction : require('./topUp'),
+    ShoutedTeamHistory : require('./shoutedTeamHistory')
 };

@@ -8,5 +8,6 @@ module.exports = {
   ShoutTransaction: require("./shoutService"),
   CompanyService: require("./companyService"),
   TeamService: require("./teamService"),
-  TopUpService: require("./topUpService")
+  TopUpService: require("./topUpService"),
+  ShoutedTeamHistoryService: require('./shoutedTeamHistoryService'),
 };
