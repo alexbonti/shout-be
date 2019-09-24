@@ -139,10 +139,91 @@ var getTeams = function (userData, callback) {
                         (function (key) {
                             taskInParallel.push((function (key) {
                                 return function (embeddedCB) {
-                                   var total = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
-                                   teams.push({team : teamDetails[key], totalMembers : total});
-                                   console.log(">>>>>>>>>>>>>",total)
-                                   embeddedCB()
+                                    var total = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+                                    teams.push({ team: teamDetails[key], totalMembers: total });
+                                    console.log(">>>>>>>>>>>>>", total)
+                                    embeddedCB()
+                                }
+                            })(key))
+                        }(key));
+                    }
+                    async.parallel(taskInParallel, function (err, result) {
+                        cb(null);
+                    });
+                }
+            }
+
+        ],
+        function (err, result) {
+            if (err) return callback(err);
+            else return callback(null, { data: teams });
+        }
+    );
+};
+
+
+var getIndividualTeam = function (userData, payloadData, callback) {
+    var teamDetails;
+    var adminSummary = [];
+    var teams = [];
+    async.series(
+        [
+            function (cb) {
+                var criteria = {
+                    _id: userData._id
+                };
+                Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                    if (err) cb(err);
+                    else {
+                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        else {
+                            userFound = (data && data[0]) || null;
+                            cb();
+                        }
+                    }
+                });
+            },
+
+            function (cb) {
+                var path = "managerIds userIds";
+                var select = "firstName lastName";
+                var populate = {
+                    path: path,
+                    match: {},
+                    select: select,
+                    options: {
+                        lean: true
+                    }
+                };
+                var projection = {
+                    __v: 0,
+                };
+
+                Service.TeamService.getPopulatedUserDetails({
+                    adminId: userFound._id,
+                    isActive: true,
+                    _id: payloadData.teamId
+                }, projection, populate, {}, {}, function (err, data) {
+                    if (err) {
+                        cb(err);
+                    } else {
+                        teamDetails = data;
+                        cb();
+                    }
+                });
+            },
+
+            function (cb) {
+                if (teamDetails) {
+                    var taskInParallel = [];
+                    for (var key in teamDetails) {
+                        (function (key) {
+                            taskInParallel.push((function (key) {
+                                return function (embeddedCB) {
+                                    var total = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+                                    teams.push({ team: teamDetails[key], totalMembers: total });
+                                    console.log(">>>>>>>>>>>>>", total)
+                                    embeddedCB()
                                 }
                             })(key))
                         }(key));
@@ -657,5 +738,6 @@ module.exports = {
     promoteUserToManager: promoteUserToManager,
     demoteManagerToUser: demoteManagerToUser,
     removeMemberFromTeam: removeMemberFromTeam,
-    deleteTeam: deleteTeam
+    deleteTeam: deleteTeam,
+    getIndividualTeam: getIndividualTeam
 }

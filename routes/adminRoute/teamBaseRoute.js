@@ -36,7 +36,7 @@ var createTeam = {
             payload: {
                 teamName: Joi.string().required(),
                 location: Joi.string().required(),
-                managerIds : Joi.array().required(),
+                managerIds: Joi.array().required(),
             },
             failAction: UniversalFunctions.failActionFunction
         },
@@ -79,6 +79,50 @@ var getTeams = {
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
             failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
+var getIndividualTeam = {
+    method: "POST",
+    path: "/api/admin/getIndividualTeam",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.TeamBaseController.getIndividualTeam(
+                userData, 
+                request.payload,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "get IndividualTeam",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            failAction: UniversalFunctions.failActionFunction,
+            payload: {
+                teamId: Joi.string().required(),
+            }
         },
         plugins: {
             "hapi-swagger": {
@@ -413,5 +457,6 @@ module.exports = [
     promoteUserToManager,
     demoteManagerToUser,
     removeMemberFromTeam,
-    deleteTeam
+    deleteTeam,
+    getIndividualTeam
 ]
