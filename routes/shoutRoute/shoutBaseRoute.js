@@ -51,7 +51,7 @@ var createShout = {
 
 var getShoutTransaction = {
   method: "POST",
-  path: "/api/admin/getShoutTransaction",
+  path: "/api/shout/getShoutTransaction",
   handler: function (request, h) {
     return new Promise((resolve, reject) => {
       Controller.ShoutBaseController.getShoutTransaction(request.payload, function (err, data) {
@@ -83,7 +83,7 @@ var getShoutTransaction = {
 
 var redeemTransaction = {
   method: "POST",
-  path: "/api/admin/redeemTransaction",
+  path: "/api/shout/redeemTransaction",
   handler: function (request, h) {
     return new Promise((resolve, reject) => {
       Controller.ShoutBaseController.redeemTransaction(request.payload, function (err, data) {
