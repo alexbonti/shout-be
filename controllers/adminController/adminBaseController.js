@@ -859,7 +859,7 @@ var getAdminTeamShoutedHistory = function (userData, callback) {
 
       Service.ShoutedTeamHistoryService.getPopulatedTeamDetails({
         adminId: userData._id,
-      }, projection, populate, {date: -1}, {}, function (err, data) {
+      }, projection, populate, { date: -1 }, {}, function (err, data) {
         if (err) {
           cb(err);
         } else {
@@ -1122,6 +1122,98 @@ var getTeamNeedsAttention = function (userData, callback) {
   })
 }
 
+var getShoutingTrends = function (userData, callback) {
+  var history = null;
+  var trends = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb();
+          }
+        }
+      });
+    },
+    function (cb) {
+      criteria = [
+        {
+          $match: {
+            adminId: userFound._id,
+          }
+        },
+        {
+          $project: {
+            month: {
+              $month: "$date"
+            },
+            _id: 0
+          }
+        }
+      ]
+      Service.ShoutedTeamHistoryService.getAggregateShoutedTeamHistory(criteria, function (err, data) {
+        if (err) cb(err)
+        else {
+          console.log(data)
+          history = data;
+          cb();
+        }
+      })
+    },
+    function (cb) {
+      if (history) {
+        var months = [];
+        months = _.map(history, function (e) {
+          return e.month
+        })
+        _.map(months, function (x) {
+          switch (x) {
+            case 1: trends[0] += 1
+              break;
+            case 2: trends[1] += 1
+              break;
+            case 3: trends[2] += 1
+              break;
+            case 4: trends[3] += 1
+              break;
+            case 5: trends[4] += 1
+              break;
+            case 6: trends[5] += 1
+              break;
+            case 7: trends[6] += 1
+              break;
+            case 8: trends[7] += 1
+              break;
+            case 9: trends[8] += 1
+              break;
+            case 10: trends[9] += 1
+              break;
+            case 11: trends[10] += 1
+              break;
+            case 12: trends[11] += 1
+              break;
+            default: trends;
+          }
+        })
+        cb();
+      }
+      else {
+        cb();
+      }
+    }
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data: trends })
+  })
+}
+
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -1138,5 +1230,6 @@ module.exports = {
   createSuperAdmin: createSuperAdmin,
   getAdminTeamShoutedHistory: getAdminTeamShoutedHistory,
   getMostRecognisedTeam: getMostRecognisedTeam,
-  getTeamNeedsAttention: getTeamNeedsAttention
+  getTeamNeedsAttention: getTeamNeedsAttention,
+  getShoutingTrends: getShoutingTrends
 };
