@@ -859,7 +859,7 @@ var getAdminTeamShoutedHistory = function (userData, callback) {
 
       Service.ShoutedTeamHistoryService.getPopulatedTeamDetails({
         adminId: userData._id,
-      }, projection, populate, {}, {}, function (err, data) {
+      }, projection, populate, {date: -1}, {}, function (err, data) {
         if (err) {
           cb(err);
         } else {

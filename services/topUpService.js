@@ -9,7 +9,7 @@ var createTopUpTransaction = function (objToSave, callback) {
 //Get Users from DB
 var getTopUpTransaction = function (criteria, projection, options, callback) {
     options.lean = true;
-    Models.TopUpTransaction.find(criteria, projection, options, callback);
+    Models.TopUpTransaction.find(criteria, projection, options, callback).sort({date: -1});
 };
 
 module.exports = {
