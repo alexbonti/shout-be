@@ -1027,27 +1027,33 @@ var getTeamNeedsAttention = function (userData, callback) {
     },
 
     function (cb) {
-      criteria = [
-        {
-          $match: {
-            adminId: userFound._id
+      if (teamIds.length != 0) {
+        criteria = [
+          {
+            $match: {
+              adminId: userFound._id
+            }
+          }, { "$group": { "_id": null, "ids": { "$addToSet": "$teamId" } } },
+          { "$project": { "missingIds": { "$setDifference": [teamIds, "$ids"] } } }
+        ]
+        Service.ShoutedTeamHistoryService.getAggregateShoutedTeamHistory(criteria, function (err, data) {
+          if (err) cb(err)
+          else {
+            if (data != undefined && data.length != 0) {
+              missingIds = data && data[0].missingIds || null
+              _.map(missingIds, function (e) { teamIdsNotFound.push(String(e)) })
+              newTeamIds = _.difference(allTeamIds, teamIdsNotFound)
+              cb();
+            }
+            else{
+              cb(null)
+            }
           }
-        }, { "$group": { "_id": null, "ids": { "$addToSet": "$teamId" } } },
-        { "$project": { "missingIds": { "$setDifference": [teamIds, "$ids"] } } }
-      ]
-      Service.ShoutedTeamHistoryService.getAggregateShoutedTeamHistory(criteria, function (err, data) {
-        if (err) cb(err)
-        else {
-          missingIds = data && data[0].missingIds || null
-          _.map(missingIds, function (e) { teamIdsNotFound.push(String(e)) })
-          cb();
-        }
-      })
-    },
-
-    function (cb) {
-      newTeamIds = _.difference(allTeamIds, teamIdsNotFound)
-      cb();
+        })
+      }
+      else{
+        cb(null)
+      }
     },
 
     function (cb) {
