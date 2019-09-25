@@ -1038,7 +1038,7 @@ var getTeamNeedsAttention = function (userData, callback) {
       Service.ShoutedTeamHistoryService.getAggregateShoutedTeamHistory(criteria, function (err, data) {
         if (err) cb(err)
         else {
-          missingIds = data[0].missingIds
+          missingIds = data && data[0].missingIds || null
           _.map(missingIds, function (e) { teamIdsNotFound.push(String(e)) })
           cb();
         }
