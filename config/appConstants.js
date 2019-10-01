@@ -22,7 +22,8 @@ var DATABASE = {
     USER: "USER",
     SUPERADMIN: "SUPERADMIN",
     ADMIN: "ADMIN",
-    MANAGER: "MANAGER"
+    MANAGER: "MANAGER",
+    MERCHANT: "MERCHANT"
   }
 };
 

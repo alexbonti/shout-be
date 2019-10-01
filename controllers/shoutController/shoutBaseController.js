@@ -303,7 +303,7 @@ var createShout = function (userData, payloadData, callback) {
           }
         })
       }
-      else{
+      else {
         cb();
       }
     }
@@ -360,6 +360,7 @@ var getShoutTransaction = function (payloadData, callback) {
 var redeemTransaction = function (payloadData, callback) {
   var transData = []
   var adminSummary = null;
+  var shoutTransaction = null;
   async.series([
     function (cb) {
       var criteria = {
@@ -384,11 +385,15 @@ var redeemTransaction = function (payloadData, callback) {
 
     function (cb) {
       if (payloadData.amount == transData.credits) {
-        Service.ShoutTransaction.updateShoutTransaction({ _id: payloadData.transactionId }, { redeemed: true }, {}, function (err, data) {
-          if (err) cb(err)
-          else {
-            cb()
-          }
+
+        var dataToPass = {
+          transactionId: payloadData.transactionId,
+          amount: payloadData.amount,
+          transaction: transData,
+          merchantId: payloadData.merchantId
+        }
+        concludeMerchantTransaction(dataToPass, function (err, data) {
+          cb();
         })
       }
       else if (payloadData.amount < transData.credits) {
@@ -397,7 +402,8 @@ var redeemTransaction = function (payloadData, callback) {
           transactionId: payloadData.transactionId,
           adminId: transData.adminId,
           credits: transData.credits,
-          amountSpent: payloadData.amount
+          amountSpent: payloadData.amount,
+          merchantId: payloadData.merchantId
         }
 
         concludeTransaction(dataToPass, function (err, data) {
@@ -407,7 +413,7 @@ var redeemTransaction = function (payloadData, callback) {
       else {
         cb(ERROR.INVALID_AMOUNT)
       }
-    }
+    },
   ], function (err, result) {
     if (err) callback(err)
     else callback(null, {
@@ -431,7 +437,7 @@ var concludeTransaction = function (DATA, callback) {
     },
 
     function (cb) {
-      Service.ShoutTransaction.updateShoutTransaction({ _id: DATA.transactionId }, { $set: { redeemed: true } }, {}, function (err, data) {
+      Service.ShoutTransaction.updateShoutTransaction({ _id: DATA.transactionId }, { $set: { redeemed: true, merchantId: DATA.merchantId } }, {}, function (err, data) {
         if (err) cb(err)
         else {
           cb()
@@ -456,9 +462,92 @@ var concludeTransaction = function (DATA, callback) {
   })
 }
 
+var concludeMerchantTransaction = function (DATA, callback) {
+  var merchantSummary = null;
+
+  async.series([
+    function (cb) {
+      Service.MerchantService.getMerchantExtended({ merchantId: DATA.merchantId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          merchantSummary = data && data[0] || null;
+          cb()
+        }
+      })
+    },
+
+    function (cb) {
+      Service.ShoutTransaction.updateShoutTransaction({ _id: DATA.transactionId }, { redeemed: true, merchantId: DATA.merchantId }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          shoutTransaction = data && data[0] || null;
+          cb()
+        }
+      })
+    },
+
+    function (cb) {
+      var orders = merchantSummary.orders + 1;
+      var customers = merchantSummary.customers + 1;
+      var earning = merchantSummary.earning + DATA.amount;
+
+      Service.MerchantService.updateMerchantExtended({ merchantId: DATA.merchantId }, { $set: { orders: orders, customers: customers, earning: earning } }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          cb()
+        }
+      })
+    }
+    //TODO: create order history
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null)
+  })
+}
+
+var getMerchantToShout = function (payloadData, callback) {
+  var transData = []
+  var storeData = null;
+  async.series([
+
+    function (cb) {
+      var criteria = {
+        merchantId: payloadData.merchantId,
+      };
+      var projection = {
+        merchantId: 0,
+        location: 0,
+        orders: 0,
+        customers: 0,
+        earning: 0,
+        paid: 0,
+        claimProcessing: 0,
+        claimStatus: false,
+        _id: 0,
+        __v: 0,
+        profilePicture: 0
+      }
+      Service.MerchantService.getMerchantExtended(criteria, projection, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          storeData = data && data[0] || null;
+          cb()
+        }
+      })
+    }
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, {
+      data: storeData
+    })
+  })
+}
 
 module.exports = {
   createShout: createShout,
   getShoutTransaction: getShoutTransaction,
-  redeemTransaction: redeemTransaction
+  redeemTransaction: redeemTransaction,
+  getMerchantToShout: getMerchantToShout
 }

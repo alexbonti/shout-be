@@ -101,7 +101,8 @@ var redeemTransaction = {
     validate: {
       payload: {
         transactionId: Joi.string().required(),
-        amount: Joi.number().required()
+        amount: Joi.number().required(),
+        merchantId: Joi.string().required()
       }
     },
     plugins: {
@@ -113,10 +114,41 @@ var redeemTransaction = {
   }
 };
 
+var getMerchantToShout = {
+  method: "POST",
+  path: "/api/shout/getMerchantToShout",
+  handler: function (request, h) {
+    return new Promise((resolve, reject) => {
+      Controller.ShoutBaseController.getMerchantToShout(request.payload, function (err, data) {
+        if (!err) {
+          resolve(UniversalFunctions.sendSuccess(null, data));
+        } else {
+          reject(UniversalFunctions.sendError(err));
+        }
+      });
+    });
+  },
+  config: {
+    description: "get Merchant To Shout",
+    tags: ["api", "admin"],
+    validate: {
+      payload: {
+        merchantId: Joi.string().required()
+      }
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
 
 var shoutBaseRoute = [
   createShout,
   getShoutTransaction,
-  redeemTransaction
+  redeemTransaction,
+  getMerchantToShout
 ];
 module.exports = shoutBaseRoute;
