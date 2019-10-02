@@ -7,6 +7,7 @@ var ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 var _ = require("underscore");
 var Config = require("../../config");
 var NodeMailer = require("../../lib/nodeMailer");
+var webPagelink = process.env.WEBPAGELINK;
 
 
 
@@ -262,7 +263,7 @@ var createShout = function (userData, payloadData, callback) {
                       } else {
                         console.log("!!!!!!!!!!!!!!!!!!!!!!", dataToSend[key])
                         transactionIds.push(transData._id)
-                        dataToSend[key].redeemLink = "Somelink/" + transData._id;
+                        dataToSend[key].redeemLink = webPagelink+"?tid=" + transData._id;
                         console.log(dataToSend[key].redeemLink)
                         console.log("data : ", dataToSend[key])
                         NodeMailer.sendMail(dataToSend[key]);
