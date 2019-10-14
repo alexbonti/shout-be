@@ -102,7 +102,8 @@ var redeemTransaction = {
       payload: {
         transactionId: Joi.string().required(),
         amount: Joi.number().required(),
-        merchantId: Joi.string().required()
+        merchantId: Joi.string().required(),
+        orderItem: Joi.string()
       }
     },
     plugins: {

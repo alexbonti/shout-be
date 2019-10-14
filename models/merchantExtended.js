@@ -26,8 +26,6 @@ var merchantExtended = new Schema({
     customers: { type: Number, default: 0 },
     earning: { type: Number, default: 0 },
     paid: { type: Number, default: 0 },
-    claimProcessing: { type: Boolean, default: false },
-    claimStatus: { type: Boolean, default: false }
 });
 
 merchantExtended.index( { location : "2dsphere" } )

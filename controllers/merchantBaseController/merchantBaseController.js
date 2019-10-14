@@ -463,32 +463,15 @@ var getOrdersHistory = function (userData, callback) {
             });
         },
 
-        //   function (cb) {
-        //     var path = "teamId";
-        //     var select = "teamName";
-        //     var populate = {
-        //       path: path,
-        //       match: {},
-        //       select: select,
-        //       options: {
-        //         lean: true
-        //       }
-        //     };
-        //     var projection = {
-        //       __v: 0,
-        //     };
-
-        //     Service.ShoutedTeamHistoryService.getPopulatedTeamDetails({
-        //       MerchantId: userData._id,
-        //     }, projection, populate, {}, {}, function (err, data) {
-        //       if (err) {
-        //         cb(err);
-        //       } else {
-        //         history = data
-        //         cb();
-        //       }
-        //     });
-        //   },
+        function (cb) {
+            Service.MerchantService.getMerchantOrders({ merchantId: userData._id }, { __v: 0, merchantId: 0 }, {}, function (err, data) {
+                if (err) cb(err)
+                else {
+                    history = data;
+                    cb();
+                }
+            })
+        }
     ], function (err, result) {
         if (err) callback(err)
         else callback(null, { data: history })
@@ -497,6 +480,7 @@ var getOrdersHistory = function (userData, callback) {
 
 var getClaimStatus = function (userData, callback) {
     var transaction;
+    var claims;
     async.series([
         function (cb) {
             var criteria = {
@@ -514,11 +498,18 @@ var getClaimStatus = function (userData, callback) {
             });
         },
 
-
-
+        function (cb) {
+            Service.MerchantService.getMerchantClaims({ merchantId: userData._id }, { __v: 0, merchantId: 0 }, {}, function (err, data) {
+                if (err) cb(err)
+                else {
+                    claims = data;
+                    cb();
+                }
+            })
+        }
     ], function (err, result) {
         if (err) callback(err)
-        else callback(null, { data: transaction })
+        else callback(null, { data: claims })
     })
 }
 
@@ -569,6 +560,146 @@ var updateMerchantProfile = function (userData, payloadData, callback) {
     })
 }
 
+var createClaim = function (userData, payloadData, callback) {
+    var transaction;
+    var merchantSummary;
+    var claims;
+    async.series([
+        function (cb) {
+            var criteria = {
+                _id: userData._id
+            };
+            Service.MerchantService.getMerchant(criteria, { password: 0 }, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                    else {
+                        userFound = (data && data[0]) || null;
+                        cb();
+                    }
+                }
+            });
+        },
+
+        function (cb) {
+            var criteria = {
+                merchantId: userData._id
+            };
+            Service.MerchantService.getMerchantExtended(criteria, { password: 0 }, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                    else {
+                        merchantSummary = (data && data[0]) || null;
+                        cb();
+                    }
+                }
+            });
+        },
+
+        function (cb) {
+            Service.MerchantService.getMerchantClaims({ merchantId: userData._id, status: 'Processing' }, {}, {}, function (err, data) {
+                if (err) cb(err)
+                else {
+                    if (data == null || data.length == 0) {
+                        cb();
+                    }
+                    else {
+                        cb(ERROR.DEFAULT)
+                    }
+                }
+            })
+        },
+        function (cb) {
+            if (payloadData.amount > merchantSummary.earning) {
+                cb(ERROR.INVALID_AMOUNT)
+            }
+            else {
+                var objToSave = {
+                    merchantId: userData._id,
+                    amount: payloadData.amount
+                }
+                Service.MerchantService.createMerchantClaims(objToSave, function (err, data) {
+                    if (err) cb(err)
+                    else cb();
+                })
+            }
+        },
+
+        function (cb) {
+            var newEarning = merchantSummary.earning - payloadData.amount;
+            Service.MerchantService.updateMerchantExtended({ merchantId: userData._id }, { $set: { earning: newEarning } }, {}, function (err, data) {
+                if (err) cb(err)
+                else cb();
+            })
+        }
+
+    ], function (err, result) {
+        if (err) callback(err)
+        else callback(null)
+    })
+}
+
+var confirmMerchantClaim = function (userData, payloadData, callback) {
+    var adminSummary = null;
+    var merchantSummary;
+    async.series([
+        function (cb) {
+            var criteria = {
+                _id: userData._id,
+                emailId: "anirudh.m0009@gmail.com"
+            };
+            Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                    else {
+                        userFound = (data && data[0]) || null;
+                        cb();
+                    }
+                }
+            });
+        },
+
+
+        function (cb) {
+            var criteria = {
+                merchantId: payloadData.merchantId
+            };
+            Service.MerchantService.getMerchantExtended(criteria, { password: 0 }, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                    else {
+                        merchantSummary = (data && data[0]) || null;
+                        cb();
+                    }
+                }
+            });
+        },
+
+        function (cb) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>", merchantSummary);
+            Service.MerchantService.updateMerchantClaims({ _id: payloadData.claimId, status: 'Processing' }, { $set: { status: 'Transferred', date: Date.now() } }, {}, function (err, data) {
+                if (err) cb(err)
+                else cb();
+            })
+        },
+
+        function (cb) {
+            var paid = merchantSummary.paid + payloadData.amount;
+            Service.MerchantService.updateMerchantExtended({ merchantId: payloadData.merchantId }, { $set: { paid: paid } }, {}, function (err, data) {
+                if (err) cb(err)
+                else cb();
+            })
+        }
+
+    ], function (err, result) {
+        if (err) callback(err)
+        else callback(null)
+    })
+}
+
 module.exports = {
     merchantLogin: merchantLogin,
     createMerchant: createMerchant,
@@ -579,7 +710,9 @@ module.exports = {
     getMerchantExtendedProfile: getMerchantExtendedProfile,
     getOrdersHistory: getOrdersHistory,
     getClaimStatus: getClaimStatus,
-    updateMerchantProfile: updateMerchantProfile
+    updateMerchantProfile: updateMerchantProfile,
+    createClaim: createClaim,
+    confirmMerchantClaim: confirmMerchantClaim
 };
 
 

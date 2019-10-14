@@ -347,7 +347,7 @@ var getClaimStatus = {
                 request.auth.credentials.userData) ||
             null;
         return new Promise((resolve, reject) => {
-            Controller.TopUpBaseController.getClaimStatus(userData, function (err, data) {
+            Controller.MerchantBaseController.getClaimStatus(userData, function (err, data) {
                 if (!err) {
                     resolve(UniversalFunctions.sendSuccess(null, data));
                 } else {
@@ -424,6 +424,105 @@ var updateMerchantProfile = {
         }
     }
 };
+
+var createClaim = {
+    method: "POST",
+    path: "/api/merchant/createClaim",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        return new Promise((resolve, reject) => {
+            Controller.MerchantBaseController.createClaim(
+                userData,
+                request.payload,
+                function (err, user) {
+                    if (!err) {
+                        resolve(
+                            UniversalFunctions.sendSuccess(
+                                UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.SUCCESS.DEFAULT,
+                                user
+                            )
+                        );
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "create Claim",
+        tags: ["api", "merchant"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                amount: Joi.number().required()
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
+var confirmMerchantClaim = {
+    method: "PUT",
+    path: "/api/merchant/confirmMerchantClaim",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        return new Promise((resolve, reject) => {
+            Controller.MerchantBaseController.confirmMerchantClaim(
+                userData,
+                request.payload,
+                function (err, user) {
+                    if (!err) {
+                        resolve(
+                            UniversalFunctions.sendSuccess(
+                                UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.SUCCESS.DEFAULT,
+                                user
+                            )
+                        );
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "confirm Merchant Claim",
+        tags: ["api", "merchant"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                merchantId: Joi.string().required(),
+                amount: Joi.number().required(),
+                claimId: Joi.string().required()
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
 var merchantBaseRoute = [
     MerchantLogin,
     createMerchant,
@@ -434,7 +533,9 @@ var merchantBaseRoute = [
     getMerchantSummary,
     getOrdersHistory,
     getClaimStatus,
-    updateMerchantProfile
+    updateMerchantProfile,
+    createClaim,
+    confirmMerchantClaim
 ];
 module.exports = merchantBaseRoute;
 

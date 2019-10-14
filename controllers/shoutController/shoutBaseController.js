@@ -384,30 +384,18 @@ var redeemTransaction = function (payloadData, callback) {
     },
 
     function (cb) {
-      if (payloadData.amount == transData.credits) {
-
-        var dataToPass = {
-          transactionId: payloadData.transactionId,
-          amount: payloadData.amount,
-          transaction: transData,
-          merchantId: payloadData.merchantId
-        }
-        concludeMerchantTransaction(dataToPass, function (err, data) {
-          cb();
-        })
-      }
-      else if (payloadData.amount < transData.credits) {
+      if (payloadData.amount <= transData.credits) {
 
         var dataToPass = {
           transactionId: payloadData.transactionId,
           adminId: transData.adminId,
           credits: transData.credits,
           amountSpent: payloadData.amount,
-          merchantId: payloadData.merchantId
+          merchantId: payloadData.merchantId,
+          orderItem: payloadData.orderItem
         }
-
         concludeTransaction(dataToPass, function (err, data) {
-          cb()
+          cb();
         })
       }
       else {
@@ -437,11 +425,46 @@ var concludeTransaction = function (DATA, callback) {
     },
 
     function (cb) {
+      Service.MerchantService.getMerchantExtended({ merchantId: DATA.merchantId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          merchantSummary = data && data[0] || null;
+          cb()
+        }
+      })
+    },
+
+    function (cb) {
       Service.ShoutTransaction.updateShoutTransaction({ _id: DATA.transactionId }, { $set: { redeemed: true, merchantId: DATA.merchantId } }, {}, function (err, data) {
         if (err) cb(err)
         else {
           cb()
         }
+      })
+    },
+
+    function (cb) {
+      var orders = merchantSummary.orders + 1;
+      var customers = merchantSummary.customers + 1;
+      var earning = merchantSummary.earning + DATA.amountSpent;
+
+      Service.MerchantService.updateMerchantExtended({ merchantId: DATA.merchantId }, { $set: { orders: orders, customers: customers, earning: earning } }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          cb()
+        }
+      })
+    },
+
+    function (cb) {
+      var objToSave = {
+        merchantId: DATA.merchantId,
+        orderItem: DATA.orderItem,
+        credits: DATA.amountSpent
+      }
+      Service.MerchantService.createMerchantOrder(objToSave, function (err, data) {
+        if (err) cb(err)
+        else cb();
       })
     },
 
@@ -455,50 +478,6 @@ var concludeTransaction = function (DATA, callback) {
         }
       })
     }
-
-  ], function (err, result) {
-    if (err) callback(err)
-    else callback(null)
-  })
-}
-
-var concludeMerchantTransaction = function (DATA, callback) {
-  var merchantSummary = null;
-
-  async.series([
-    function (cb) {
-      Service.MerchantService.getMerchantExtended({ merchantId: DATA.merchantId }, {}, {}, function (err, data) {
-        if (err) cb(err)
-        else {
-          merchantSummary = data && data[0] || null;
-          cb()
-        }
-      })
-    },
-
-    function (cb) {
-      Service.ShoutTransaction.updateShoutTransaction({ _id: DATA.transactionId }, { redeemed: true, merchantId: DATA.merchantId }, {}, function (err, data) {
-        if (err) cb(err)
-        else {
-          shoutTransaction = data && data[0] || null;
-          cb()
-        }
-      })
-    },
-
-    function (cb) {
-      var orders = merchantSummary.orders + 1;
-      var customers = merchantSummary.customers + 1;
-      var earning = merchantSummary.earning + DATA.amount;
-
-      Service.MerchantService.updateMerchantExtended({ merchantId: DATA.merchantId }, { $set: { orders: orders, customers: customers, earning: earning } }, {}, function (err, data) {
-        if (err) cb(err)
-        else {
-          cb()
-        }
-      })
-    }
-    //TODO: create order history
 
   ], function (err, result) {
     if (err) callback(err)

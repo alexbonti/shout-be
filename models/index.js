@@ -14,5 +14,7 @@ module.exports = {
     TopUpTransaction: require('./topUp'),
     ShoutedTeamHistory: require('./shoutedTeamHistory'),
     Merchant: require('./merchant'),
-    MerchantExtended: require('./merchantExtended')
+    MerchantExtended: require('./merchantExtended'),
+    MerchantOrderHistory: require('./merchantOrderHistory'),
+    MerchantClaims: require('./merchantClaims')
 };
