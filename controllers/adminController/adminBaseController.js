@@ -822,6 +822,169 @@ var completeSuperAdminSignUp = function (DATA, callback) {
   })
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+var createSuperAdminInsideCompany = function (userData, payloadData, callback) {
+  var newAdmin;
+  var adminSummary;
+  var dataToPass = {};
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var criteria = {
+          adminId: userData._id
+        }
+        Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminSummary = data && data[0] || null;
+            cb();
+          }
+        })
+      },
+
+      function (cb) {
+        var criteria = {
+          emailId: payloadData.emailId
+        }
+        Service.AdminService.getAdmin(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            if (data.length > 0) cb(ERROR.USERNAME_EXIST)
+            else cb()
+          }
+        })
+      },
+
+      function (cb) {
+        payloadData.initialPassword = UniversalFunctions.generateRandomString();
+        payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
+        payloadData.userType = Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN;
+        Service.AdminService.createAdmin(payloadData, function (err, data) {
+          if (err) cb(err)
+          else {
+            dataToPass.newAdmin = data;
+            dataToPass.companyId = adminSummary.companyId;
+            completeSuperAdminSignUpInsideCompany(dataToPass, function (err, data) {
+              if (err) cb(err)
+              else {
+                cb();
+              }
+            })
+          }
+        })
+      }
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { adminDetails: UniversalFunctions.deleteUnnecessaryUserData(dataToPass.newAdmin) });
+    }
+  );
+};
+
+
+var completeSuperAdminSignUpInsideCompany = function (DATA, callback) {
+  async.series([
+    function (cb) {
+      Service.AdminService.createAdminExteded({ adminId: DATA.newAdmin, companyId: DATA.companyId }, function (err, data) {
+        if (err) cb(err)
+        else {
+          adminSummary = data;
+          cb()
+        }
+      })
+    },
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null)
+  })
+}
+
+var deleteSuperAdminInsideCompany = function (userData, payloadData, callback) {
+  var adminSummary;
+  var superAdminId;
+  var dataToPass = {};
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var criteria = {
+          adminId: userData._id
+        }
+        Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminSummary = data && data[0] || null;
+            cb();
+          }
+        })
+      },
+
+      function (cb) {
+        var criteria = {
+          _id: adminSummary.companyId
+        }
+        Service.CompanyService.getCompany(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            superAdminId = data && data[0].superAdminId || null;
+            cb()
+          }
+        })
+      },
+
+      function (cb) {
+        if (String(superAdminId) == String(userData._id)) {
+          Service.AdminService.deleteAdmin({ _id: payloadData.adminId }, function (err, data) {
+            if (err) cb(err)
+            else cb();
+          })
+        }
+        else {
+          cb(ERROR.PRIVILEGE_MISMATCH);
+        }
+      }
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null);
+    }
+  );
+};
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 var getAdminTeamShoutedHistory = function (userData, callback) {
   var history = null;
   var mostRecognised = [];
@@ -1045,13 +1208,13 @@ var getTeamNeedsAttention = function (userData, callback) {
               newTeamIds = _.difference(allTeamIds, teamIdsNotFound)
               cb();
             }
-            else{
+            else {
               cb(null)
             }
           }
         })
       }
-      else{
+      else {
         cb(null)
       }
     },
@@ -1237,5 +1400,7 @@ module.exports = {
   getAdminTeamShoutedHistory: getAdminTeamShoutedHistory,
   getMostRecognisedTeam: getMostRecognisedTeam,
   getTeamNeedsAttention: getTeamNeedsAttention,
-  getShoutingTrends: getShoutingTrends
+  getShoutingTrends: getShoutingTrends,
+  createSuperAdminInsideCompany: createSuperAdminInsideCompany,
+  deleteSuperAdminInsideCompany: deleteSuperAdminInsideCompany
 };

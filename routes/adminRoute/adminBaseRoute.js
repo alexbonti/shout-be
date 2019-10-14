@@ -570,7 +570,98 @@ var createSuperAdmin = {
     }
   }
 };
+////////////////////////////////////////////////////////////////////////
+var createSuperAdminInsideCompany = {
+  method: "POST",
+  path: "/api/admin/createSuperAdminInsideCompany",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.createSuperAdminInsideCompany(
+        userData,
+        payloadData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "create super admin",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      payload: {
+        emailId: Joi.string().required(),
+        fullName: Joi.string()
+          .optional()
+          .allow("")
+      },
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
 
+var deleteSuperAdminInsideCompany = {
+  method: "DELETE",
+  path: "/api/admin/deleteSuperAdminInsideCompany",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.deleteSuperAdminInsideCompany(
+        userData,
+        payloadData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "delete super admin",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      payload: {
+        adminId: Joi.string().required(),
+      },
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+///////////////////////////////////////////////////////////////////////
 var getAdminTeamShoutedHistory = {
   method: "GET",
   path: "/api/admin/getAdminTeamShoutedHistory",
@@ -732,6 +823,8 @@ var AdminBaseRoute = [
   getAdminTeamShoutedHistory,
   getMostRecognisedTeam,
   getTeamNeedsAttention,
-  getShoutingTrends
+  getShoutingTrends,
+  createSuperAdminInsideCompany,
+  deleteSuperAdminInsideCompany
 ];
 module.exports = AdminBaseRoute;
