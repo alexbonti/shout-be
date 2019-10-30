@@ -6,6 +6,7 @@ var CodeGenerator = require("../../lib/codeGenerator");
 var ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 var _ = require("underscore");
 var Config = require("../../config");
+var Nodemailer = require("../../lib/nodeMailer");
 
 var merchantLogin = function (payloadData, callback) {
     payloadData.emailId = payloadData.emailId.toLowerCase();
@@ -168,6 +169,7 @@ var createMerchant = function (userData, payloadData, callback) {
                         Service.MerchantService.createMerchantExteded(extData, function (err, extendedData) {
                             if (err) cb(err)
                             else {
+                                Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
                                 cb()
                             }
                         })
@@ -542,7 +544,7 @@ var updateMerchantProfile = function (userData, payloadData, callback) {
                 },
                 location: {
                     type: "Point",
-                    coordinates: [(parseFloat(payloadData.lat)), (parseFloat(payloadData.long))]
+                    coordinates: [(parseFloat(payloadData.long)), (parseFloat(payloadData.lat))]
                 }
             }
             Service.MerchantService.updateMerchantExtended({ merchantId: userData._id }, dataToUpdate, {}, function (err, data) {
@@ -700,6 +702,76 @@ var confirmMerchantClaim = function (userData, payloadData, callback) {
     })
 }
 
+var merchantLocationByKeyword = function (payloadData, callback) {
+    var merchantSummary;
+    async.series([
+        function (cb) {
+            var regex = new RegExp('' + payloadData.name.toLowerCase(), 'i')
+            console.log(regex)
+            var criteria = {
+                storeName: regex
+            };
+            var projection = {
+                orders: 0,
+                customers: 0,
+                earning: 0,
+                paid: 0,
+                claimProcessing: 0,
+                claimStatus: 0,
+            }
+            Service.MerchantService.getMerchantExtended(criteria, projection, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    merchantSummary = data;
+                    cb();
+                }
+            });
+        },
+
+    ], function (err, result) {
+        if (err) callback(err)
+        else callback(null, { data: merchantSummary })
+    })
+}
+
+var merchantLocationByCoordinates = function (payloadData, callback) {
+    var merchantSummary;
+    async.series([
+        function (cb) {
+            var criteria = {
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [payloadData.long, payloadData.lat],
+                            $maxDistance: 2000
+                        },
+                    }
+                }
+            };
+            var projection = {
+                orders: 0,
+                customers: 0,
+                earning: 0,
+                paid: 0,
+                claimProcessing: 0,
+                claimStatus: 0,
+            }
+            Service.MerchantService.getMerchantExtended(criteria, projection, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    merchantSummary = data;
+                    cb();
+                }
+            });
+        },
+
+    ], function (err, result) {
+        if (err) callback(err)
+        else callback(null, { data: merchantSummary })
+    })
+}
+
 module.exports = {
     merchantLogin: merchantLogin,
     createMerchant: createMerchant,
@@ -712,7 +784,9 @@ module.exports = {
     getClaimStatus: getClaimStatus,
     updateMerchantProfile: updateMerchantProfile,
     createClaim: createClaim,
-    confirmMerchantClaim: confirmMerchantClaim
+    confirmMerchantClaim: confirmMerchantClaim,
+    merchantLocationByKeyword: merchantLocationByKeyword,
+    merchantLocationByCoordinates: merchantLocationByCoordinates
 };
 
 

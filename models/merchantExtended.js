@@ -28,5 +28,5 @@ var merchantExtended = new Schema({
     paid: { type: Number, default: 0 },
 });
 
-merchantExtended.index( { location : "2dsphere" } )
+merchantExtended.index({ location : "2dsphere" });
 module.exports = mongoose.model('merchantExtended', merchantExtended);

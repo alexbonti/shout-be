@@ -523,6 +523,71 @@ var confirmMerchantClaim = {
     }
 };
 
+
+var merchantLocationByKeyword = {
+    method: "POST",
+    path: "/api/merchant/merchantLocationByKeyword",
+    handler: function (request, h) {
+        return new Promise((resolve, reject) => {
+            Controller.MerchantBaseController.merchantLocationByKeyword(request.payload, function (err, data) {
+                if (!err) {
+                    resolve(UniversalFunctions.sendSuccess(null, data));
+                } else {
+                    reject(UniversalFunctions.sendError(err));
+                }
+            });
+        });
+    },
+    config: {
+        description: "merchant Location By Keyword",
+        tags: ["api", "merchant"],
+        validate: {
+            failAction: UniversalFunctions.failActionFunction,
+            payload: {
+                name: Joi.string().required()
+            }
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
+var merchantLocationByCoordinates = {
+    method: "POST",
+    path: "/api/merchant/merchantLocationByCoordinates",
+    handler: function (request, h) {
+        return new Promise((resolve, reject) => {
+            Controller.MerchantBaseController.merchantLocationByCoordinates(request.payload, function (err, data) {
+                if (!err) {
+                    resolve(UniversalFunctions.sendSuccess(null, data));
+                } else {
+                    reject(UniversalFunctions.sendError(err));
+                }
+            });
+        });
+    },
+    config: {
+        description: "merchant Location By Coordinates",
+        tags: ["api", "merchant"],
+        validate: {
+            failAction: UniversalFunctions.failActionFunction,
+            payload: {
+                lat: Joi.string().required(),
+                long: Joi.string().required()
+            }
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
 var merchantBaseRoute = [
     MerchantLogin,
     createMerchant,
@@ -535,7 +600,9 @@ var merchantBaseRoute = [
     getClaimStatus,
     updateMerchantProfile,
     createClaim,
-    confirmMerchantClaim
+    confirmMerchantClaim,
+    merchantLocationByKeyword,
+    merchantLocationByCoordinates
 ];
 module.exports = merchantBaseRoute;
 
