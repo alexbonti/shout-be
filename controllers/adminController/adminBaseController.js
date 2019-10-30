@@ -1451,6 +1451,78 @@ var checkSuperAdminForRights = function (userData, callback) {
     }
   );
 };
+
+var adminsInsideCompany = function (userData, callback) {
+  var adminSummary;
+  var adminDetails;
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var criteria = {
+          adminId: userData._id
+        }
+        Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminSummary = data && data[0] || null;
+            cb();
+          }
+        })
+      },
+      function (cb) {
+        var path = "adminId";
+        var select = "fullName emailId";
+        var populate = {
+          path: path,
+          match: {},
+          select: select,
+          options: {
+            lean: true
+          }
+        };
+        var projection = {
+          __v: 0,
+          balance: 0,
+          shouting: 0,
+          recognition: 0
+        };
+
+        Service.AdminService.getPopulatedAdmins({
+          companyId: adminSummary.companyId,
+        }, projection, populate, {}, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            adminDetails = data;
+            cb();
+          }
+        });
+      },
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { adminDetails: adminDetails });
+    }
+  );
+};
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -1471,5 +1543,6 @@ module.exports = {
   getShoutingTrends: getShoutingTrends,
   createSuperAdminInsideCompany: createSuperAdminInsideCompany,
   deleteSuperAdminInsideCompany: deleteSuperAdminInsideCompany,
-  checkSuperAdminForRights: checkSuperAdminForRights
+  checkSuperAdminForRights: checkSuperAdminForRights,
+  adminsInsideCompany: adminsInsideCompany
 };
