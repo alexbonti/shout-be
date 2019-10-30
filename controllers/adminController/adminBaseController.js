@@ -1390,6 +1390,67 @@ var getShoutingTrends = function (userData, callback) {
   })
 }
 
+var checkSuperAdminForRights = function (userData, callback) {
+  var company;
+  var adminSummary;
+  var adminRights;
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var criteria = {
+          adminId: userData._id
+        }
+        Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminSummary = data && data[0] || null;
+            cb();
+          }
+        })
+      },
+      function (cb) {
+        Service.CompanyService.getCompany({ _id: adminSummary.companyId }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            company = data && data[0] || null;
+            cb()
+          }
+        })
+      },
+      function (cb) {
+        if (String(company.superAdminId) == String(userData._id)) {
+          adminRights = true;
+        }
+        else {
+          adminRights = false;
+        }
+        cb();
+      }
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { adminRights: adminRights });
+    }
+  );
+};
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -1409,5 +1470,6 @@ module.exports = {
   getTeamNeedsAttention: getTeamNeedsAttention,
   getShoutingTrends: getShoutingTrends,
   createSuperAdminInsideCompany: createSuperAdminInsideCompany,
-  deleteSuperAdminInsideCompany: deleteSuperAdminInsideCompany
+  deleteSuperAdminInsideCompany: deleteSuperAdminInsideCompany,
+  checkSuperAdminForRights: checkSuperAdminForRights
 };

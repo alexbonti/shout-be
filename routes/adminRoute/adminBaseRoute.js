@@ -806,6 +806,45 @@ var getShoutingTrends = {
   }
 };
 
+var checkSuperAdminForRights = {
+  method: "GET",
+  path: "/api/admin/checkSuperAdminForRights",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.checkSuperAdminForRights(
+        userData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "check Super Admin ForRights",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
 var AdminBaseRoute = [
   adminLogin,
   accessTokenLogin,
@@ -825,6 +864,7 @@ var AdminBaseRoute = [
   getTeamNeedsAttention,
   getShoutingTrends,
   createSuperAdminInsideCompany,
-  deleteSuperAdminInsideCompany
+  deleteSuperAdminInsideCompany,
+  checkSuperAdminForRights
 ];
 module.exports = AdminBaseRoute;
