@@ -291,11 +291,55 @@ var getCompany = {
     }
 };
 
+var updateCompanyVision = {
+    method: "PUT",
+    path: "/api/admin/updateCompanyVision",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.CompanyBaseController.updateCompanyVision(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "update company vision",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                companyDescription: Joi.string().required(),
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
 module.exports = [
     //createCompany,
     updateCompany,
     getCompany,
     addValuesToCompany,
     editValuesOfCompany,
-    removeValueFromCompany
+    removeValueFromCompany,
+    updateCompanyVision
 ]
