@@ -9,6 +9,7 @@ var CodeGenerator = require("../../lib/codeGenerator");
 var ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 var _ = require("underscore");
 var Config = require("../../config");
+var Nodemailer = require("../../lib/nodeMailer");
 
 var adminLogin = function (payloadData, callback) {
   payloadData.emailId = payloadData.emailId.toLowerCase();
@@ -251,6 +252,7 @@ var createAdmin = function (userData, payloadData, callback) {
             Service.AdminService.createAdminExteded(extData, function (err, extendedData) {
               if (err) cb(err)
               else {
+                Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
                 cb()
               }
             })
@@ -389,18 +391,6 @@ var createUser = function (userData, payloadData, callback) {
       })
     },
     function (cb) {
-      payloadData.initialPassword = UniversalFunctions.generateRandomString();
-      payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
-      payloadData.emailVerified = true;
-      Service.UserService.createUser(payloadData, function (err, data) {
-        if (err) cb(err)
-        else {
-          newUserData = data;
-          cb()
-        }
-      })
-    },
-    function (cb) {
       if (adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
         cb(ERROR.INVALID_COMPANY_ID)
       }
@@ -409,10 +399,25 @@ var createUser = function (userData, payloadData, callback) {
       }
     },
     function (cb) {
+      payloadData.initialPassword = UniversalFunctions.generateRandomString();
+      payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
+      payloadData.emailVerified = true;
+      Service.UserService.createUser(payloadData, function (err, data) {
+        if (err) cb(err)
+        else {
+          newUserData = data;
+          Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
+          cb()
+        }
+      })
+    },
+    function (cb) {
       if (newUserData) {
         Service.UserService.createUserExtended({ userId: newUserData._id, companyId: adminDetails.companyId }, function (err, data) {
           if (err) cb(err)
-          else cb();
+          else {
+            cb();
+          }
         })
       }
     },
@@ -769,6 +774,7 @@ var createSuperAdmin = function (userData, payloadData, callback) {
             completeSuperAdminSignUp(newAdmin._id, function (err, data) {
               if (err) cb(err)
               else {
+                Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
                 cb();
               }
             })
@@ -884,6 +890,7 @@ var createSuperAdminInsideCompany = function (userData, payloadData, callback) {
             completeSuperAdminSignUpInsideCompany(dataToPass, function (err, data) {
               if (err) cb(err)
               else {
+                Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
                 cb();
               }
             })
