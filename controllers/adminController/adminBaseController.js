@@ -1236,6 +1236,7 @@ var getTeamNeedsAttention = function (userData, callback) {
                 criteria = {
                   adminId: userFound._id,
                   teamId: newTeamIds[key],
+                  isActive: true,
                   date: { $gte: new Date(Date.now() - 1000 * 86400 * 45) }
                 }
                 Service.ShoutedTeamHistoryService.getShoutedTeamHistory(criteria, {}, {}, function (err, data) {
