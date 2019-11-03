@@ -1179,7 +1179,7 @@ var getTeamNeedsAttention = function (userData, callback) {
     },
 
     function (cb) {
-      Service.TeamService.getTeam({ adminId: userFound._id }, {}, {}, function (err, data) {
+      Service.TeamService.getTeam({ adminId: userFound._id, isActive: true }, {}, {}, function (err, data) {
         if (err) cb(err)
         else {
           if (data.length == 0) {
