@@ -37,6 +37,7 @@ var createTeam = {
                 teamName: Joi.string().required(),
                 location: Joi.string().required(),
                 managerIds: Joi.array().required(),
+                userIds: Joi.array().required(),
             },
             failAction: UniversalFunctions.failActionFunction
         },
