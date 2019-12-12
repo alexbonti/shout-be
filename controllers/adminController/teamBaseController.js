@@ -707,8 +707,8 @@ var removeMemberFromTeam = function (userData, payloadData, callback) {
             function (cb) {
                 dataToUpdate = {
                     $pull: {
-                        managerIds: payloadData.memberId,
-                        userIds: payloadData.memberId
+                        managerIds: { $in: payloadData.memberId },
+                        userIds: { $in: payloadData.memberId }
                     }
                 }
                 Service.TeamService.updateTeam({ _id: teamDetails._id }, dataToUpdate, {}, function (err, data) {

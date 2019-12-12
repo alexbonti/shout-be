@@ -102,7 +102,7 @@ var getIndividualTeam = {
         var payloadData = request.payload;
         return new Promise((resolve, reject) => {
             Controller.TeamBaseController.getIndividualTeam(
-                userData, 
+                userData,
                 request.payload,
                 function (err, data) {
                     if (!err) {
@@ -437,7 +437,7 @@ var removeMemberFromTeam = {
             headers: UniversalFunctions.authorizationHeaderObj,
             payload: {
                 teamId: Joi.string().required(),
-                memberId: Joi.string().required(),
+                memberId: Joi.array().required(),
             },
             failAction: UniversalFunctions.failActionFunction
         },
