@@ -9,7 +9,7 @@ var shoutTransaction = new Schema({
     credits: { type: Number },
     message: { type: String },
     redeemed: { type: Boolean, default: false },
-    date: { type: Date, defauly: Date.now },
+    date: { type: Date, default: Date.now },
     merchantId: { type: Schema.ObjectId, ref: 'merchant' },
 });
 
