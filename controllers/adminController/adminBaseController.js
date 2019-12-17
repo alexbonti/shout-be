@@ -1495,7 +1495,7 @@ var adminsInsideCompany = function (userData, callback) {
       },
       function (cb) {
         var path = "adminId";
-        var select = "fullName emailId";
+        var select = "fullName emailId isBlocked phoneNumber countryCode";
         var populate = {
           path: path,
           match: {},
@@ -1567,7 +1567,7 @@ var usersInsideCompany = function (userData, callback) {
       },
       function (cb) {
         var path = "userId";
-        var select = "firstName lastName emailId";
+        var select = "firstName lastName emailId isBlocked phoneNumber countryCode";
         var populate = {
           path: path,
           match: {},
