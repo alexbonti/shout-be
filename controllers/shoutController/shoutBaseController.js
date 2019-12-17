@@ -125,7 +125,7 @@ var createShout = function (userData, payloadData, callback) {
         Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
           if (err) cb(err)
           else {
-            teamDetails = data;
+            teamDetails = data && data[0] || null;
             cb();
           }
         })
@@ -136,166 +136,38 @@ var createShout = function (userData, payloadData, callback) {
 
       if (teamDetails) {
         console.log("team")
-        var taskInParallel = [];
-        for (var key in teamDetails) {
-          (function (key) {
-            taskInParallel.push((function (key) {
-              return function (embeddedCB) {
-                totalMembers = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
-                if (payloadData.credits > 0 && amount >= (payloadData.credits * totalMembers)) {
-                  for (var x in teamDetails[key].managerIds) {
-                    teamMemberIds.push(teamDetails[key].managerIds[x]);
-                  }
-                  for (var y in teamDetails[key].userIds) {
-                    teamMemberIds.push(teamDetails[key].userIds[y]);
-                  }
-                  embeddedCB()
-                }
-                else {
-                  cb(ERROR.INVALID_AMOUNT)
-                }
-              }
-            })(key))
-          }(key));
-        }
-        async.parallel(taskInParallel, function (err, result) {
-          cb(null);
-        });
-      }
-      else {
-        cb()
-      }
-    },
-
-    function (cb) {
-      if (teamDetails) {
-        var taskInParallel = [];
-        for (var key in teamMemberIds) {
-          (function (key) {
-            taskInParallel.push((function (key) {
-              return function (embeddedCB) {
-                Service.UserService.getUser({
-                  _id: teamMemberIds[key]
-                }, {}, {
-                  lean: true
-                }, function (err, data) {
-                  if (err) {
-                    embeddedCB(err)
-                  } else {
-
-                    if (payloadData.credits > 0 && amount >= payloadData.credits) {
-                      amount -= payloadData.credits;
-                      DATA.adminName = userFound.fullName;
-                      DATA.receiverId = data[0]._id;
-                      DATA.receiversName = data[0].firstName;
-                      DATA.receiversEmail = data[0].emailId;
-                      DATA.credits = payloadData.credits;
-                      DATA.message = payloadData.message;
-                      console.log(DATA);
-                      dataToSend.push(DATA);
-                      DATA = {};
-                      numberOfPeople += 1;
-                    }
-                    else {
-                      DATA.receiverId = data[0]._id;
-                      DATA.receiversName = data[0].firstName;
-                      DATA.receiversEmail = data[0].emailId;
-                      DATA.credits = payloadData.credits;
-                      DATA.message = payloadData.message;
-                      dataNotSent.push(DATA);
-                      DATA = {};
-                    }
-                    embeddedCB()
-                  }
-                })
-              }
-            })(key))
-          }(key));
-        }
-        async.parallel(taskInParallel, function (err, result) {
-          cb(null);
-        });
-      }
-      else {
-        cb()
-      }
-    },
-
-
-    function (cb) {
-      console.log(payloadData, amount)
-
-      shouting = payloadData.credits * numberOfPeople;
-      totalshouting = adminSummary.shouting + shouting;
-      recognition = adminSummary.recognition + numberOfPeople;
-      dataToUpdate = {
-        $set: {
-          balance: amount,
-          shouting: totalshouting,
-          recognition: recognition
-        }
-      };
-      Service.AdminService.updateAdminExtended({
-        adminId: userData._id
-      }, dataToUpdate, {}, function (err, data) {
-        if (err) cb(err);
-        else {
-
-          if (dataToSend) {
-            var taskInParallel = [];
-            for (var key in dataToSend) {
-              (function (key) {
-                taskInParallel.push((function (key) {
-                  return function (embeddedCB) {
-                    dataToCreate = {
-                      adminId: adminSummary._id,
-                      receiverId: dataToSend[key].receiverId,
-                      emailId: dataToSend[key].receiversEmail,
-                      credits: dataToSend[key].credits,
-                      message: dataToSend[key].message,
-                      date: Date.now()
-                    }
-                    //TODO
-                    Service.ShoutTransaction.createShoutTransaction(dataToCreate, function (err, transData) {
-                      if (err) {
-                        embeddedCB(err)
-                      } else {
-                        console.log("!!!!!!!!!!!!!!!!!!!!!!", dataToSend[key])
-                        transactionIds.push(transData._id)
-                        dataToSend[key].redeemLink = "Somelink/" + transData._id;
-                        console.log(dataToSend[key].redeemLink)
-                        console.log("data : ", dataToSend[key])
-                        NodeMailer.sendMail(dataToSend[key]);
-                        embeddedCB()
-                      }
-                    })
-                  }
-                })(key))
-              }(key));
-            }
-            async.parallel(taskInParallel, function (err, result) {
-              cb(null);
-            });
-          }
-          else {
-            cb();
-          }
-        }
-      })
-    },
-
-    function (cb) {
-      if (dataToSend.length > 0) {
+        // var taskInParallel = [];
+        // for (var key in teamDetails) {
+        //   (function (key) {
+        //     taskInParallel.push((function (key) {
+        //       return function (embeddedCB) {
+        //         totalMembers = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+        //         if (payloadData.credits > 0 && amount >= (payloadData.credits * totalMembers)) {
+        //           for (var x in teamDetails[key].managerIds) {
+        //             teamMemberIds.push(teamDetails[key].managerIds[x]);
+        //           }
+        //           for (var y in teamDetails[key].userIds) {
+        //             teamMemberIds.push(teamDetails[key].userIds[y]);
+        //           }
+        //           embeddedCB()
+        //         }
+        //         else {
+        //           cb(ERROR.INVALID_AMOUNT)
+        //         }
+        //       }
+        //     })(key))
+        //   }(key));
+        // }
+        // async.parallel(taskInParallel, function (err, result) {
+        //   cb(null);
+        // });
         objToSave = {
           adminId: userData._id,
           teamId: payloadData.teamId,
-          transactionIds: transactionIds,
           values: payloadData.values,
-          creditsToEach: payloadData.credits,
-          creditsInTotal: shouting,
+          creditsInTotal: payloadData.credits,
           date: Date.now()
         }
-
         Service.ShoutedTeamHistoryService.createshoutedTeamHistory(objToSave, function (err, data) {
           if (err) cb(err)
           else {
@@ -304,9 +176,192 @@ var createShout = function (userData, payloadData, callback) {
         })
       }
       else {
+        cb()
+      }
+    },
+
+    // function (cb) {
+    //   if (teamDetails) {
+    //     var taskInParallel = [];
+    //     for (var key in teamMemberIds) {
+    //       (function (key) {
+    //         taskInParallel.push((function (key) {
+    //           return function (embeddedCB) {
+    //             Service.UserService.getUser({
+    //               _id: teamMemberIds[key]
+    //             }, {}, {
+    //               lean: true
+    //             }, function (err, data) {
+    //               if (err) {
+    //                 embeddedCB(err)
+    //               } else {
+
+    //                 if (payloadData.credits > 0 && amount >= payloadData.credits) {
+    //                   amount -= payloadData.credits;
+    //                   DATA.adminName = userFound.fullName;
+    //                   DATA.receiverId = data[0]._id;
+    //                   DATA.receiversName = data[0].firstName;
+    //                   DATA.receiversEmail = data[0].emailId;
+    //                   DATA.credits = payloadData.credits;
+    //                   DATA.message = payloadData.message;
+    //                   console.log(DATA);
+    //                   dataToSend.push(DATA);
+    //                   DATA = {};
+    //                   numberOfPeople += 1;
+    //                 }
+    //                 else {
+    //                   DATA.receiverId = data[0]._id;
+    //                   DATA.receiversName = data[0].firstName;
+    //                   DATA.receiversEmail = data[0].emailId;
+    //                   DATA.credits = payloadData.credits;
+    //                   DATA.message = payloadData.message;
+    //                   dataNotSent.push(DATA);
+    //                   DATA = {};
+    //                 }
+    //                 embeddedCB()
+    //               }
+    //             })
+    //           }
+    //         })(key))
+    //       }(key));
+    //     }
+    //     async.parallel(taskInParallel, function (err, result) {
+    //       cb(null);
+    //     });
+    //   }
+    //   else {
+    //     cb()
+    //   }
+    // },
+
+
+    function (cb) {
+      if (!teamDetails) {
+        console.log(payloadData, amount)
+
+        shouting = payloadData.credits * numberOfPeople;
+        totalshouting = adminSummary.shouting + shouting;
+        recognition = adminSummary.recognition + numberOfPeople;
+        dataToUpdate = {
+          $set: {
+            balance: amount,
+            shouting: totalshouting,
+            recognition: recognition
+          }
+        };
+        Service.AdminService.updateAdminExtended({
+          adminId: userData._id
+        }, dataToUpdate, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+
+            if (dataToSend) {
+              var taskInParallel = [];
+              for (var key in dataToSend) {
+                (function (key) {
+                  taskInParallel.push((function (key) {
+                    return function (embeddedCB) {
+                      dataToCreate = {
+                        adminId: adminSummary._id,
+                        receiverId: dataToSend[key].receiverId,
+                        emailId: dataToSend[key].receiversEmail,
+                        credits: dataToSend[key].credits,
+                        message: dataToSend[key].message,
+                        date: Date.now()
+                      }
+                      //TODO
+                      Service.ShoutTransaction.createShoutTransaction(dataToCreate, function (err, transData) {
+                        if (err) {
+                          embeddedCB(err)
+                        } else {
+                          console.log("!!!!!!!!!!!!!!!!!!!!!!", dataToSend[key])
+                          transactionIds.push(transData._id)
+                          dataToSend[key].redeemLink = "Somelink/" + transData._id;
+                          console.log(dataToSend[key].redeemLink)
+                          console.log("data : ", dataToSend[key])
+                          NodeMailer.sendMail(dataToSend[key]);
+                          embeddedCB()
+                        }
+                      })
+                    }
+                  })(key))
+                }(key));
+              }
+              async.parallel(taskInParallel, function (err, result) {
+                cb(null);
+              });
+            }
+            else {
+              cb();
+            }
+          }
+        })
+      }
+      else {
+        amount -= payloadData.credits;
+        shouting = payloadData.credits;
+        totalshouting = adminSummary.shouting + shouting;
+        recognition = adminSummary.recognition;
+        dataToUpdate = {
+          $set: {
+            balance: amount,
+            shouting: totalshouting,
+            recognition: recognition
+          }
+        };
+        Service.AdminService.updateAdminExtended({
+          adminId: userData._id
+        }, dataToUpdate, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            cb();
+          }
+        })
+      }
+    },
+
+    function (cb) {
+      if (!teamDetails) {
         cb();
       }
+      else {
+        let temp = teamDetails.credits + payloadData.credits
+        Service.TeamService.updateTeam({ _id: payloadData.teamId }, { $set: { credits: temp } }, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            cb();
+          }
+        })
+      }
     }
+    // function (cb) {
+    //   if (!teamDetails) {
+    //     if (dataToSend.length > 0) {
+    //       objToSave = {
+    //         adminId: userData._id,
+    //         teamId: payloadData.teamId,
+    //         transactionIds: transactionIds,
+    //         values: payloadData.values,
+    //         creditsToEach: payloadData.credits,
+    //         creditsInTotal: shouting,
+    //         date: Date.now()
+    //       }
+
+    //       Service.ShoutedTeamHistoryService.createshoutedTeamHistory(objToSave, function (err, data) {
+    //         if (err) cb(err)
+    //         else {
+    //           cb();
+    //         }
+    //       })
+    //     }
+    //     else {
+    //       cb();
+    //     }
+    //   }
+    //   else {
+    //     cb();
+    //   }
+    // }
 
 
   ], function (err, result) {

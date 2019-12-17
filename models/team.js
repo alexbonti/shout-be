@@ -8,7 +8,7 @@ var Config = require('../config');
 var team = new Schema({
     teamName: { type: String, trim: true },
     managerIds: [
-        { type: Schema.ObjectId, ref: 'user' }
+        { type: Schema.ObjectId, ref: 'user', required: true }
     ],
     userIds: [
         { type: Schema.ObjectId, ref: 'user' }
@@ -16,7 +16,8 @@ var team = new Schema({
     adminId: { type: Schema.ObjectId, ref: 'admin' },
     location: { type: String, trim: true },
     companyId: { type: Schema.ObjectId, ref: 'company' },
-    isActive: { type: Boolean, default: true}
+    isActive: { type: Boolean, default: true },
+    credits: { type: Number, default: 0 }
 });
 
 module.exports = mongoose.model('team', team);
