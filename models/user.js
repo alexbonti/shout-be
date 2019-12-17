@@ -25,15 +25,21 @@ var user = new Schema({
     max: 15
   },
   password: { type: String },
-  initialPassword:{type: String},
-  firstLogin:{type: Boolean, default: false},
+  initialPassword: { type: String },
+  userType: {
+    type: String, enum: [
+      Config.APP_CONSTANTS.DATABASE.USER_ROLES.USER,
+      Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER
+    ]
+  },
+  firstLogin: { type: Boolean, default: false },
   countryCode: { type: String },
   code: { type: String, trim: true },
   OTPCode: { type: String, trim: true },
   emailVerified: { type: Boolean, default: false },
   registrationDate: { type: Date, default: Date.now },
   codeUpdatedAt: { type: Date, default: Date.now, required: true },
-  isBlocked: {type: Boolean, default: false, required: true}
+  isBlocked: { type: Boolean, default: false, required: true }
 });
 
 module.exports = mongoose.model("user", user);

@@ -6,6 +6,7 @@ var TokenManager = require("../../lib/tokenManager");
 var CodeGenerator = require("../../lib/codeGenerator");
 var ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 var _ = require("underscore");
+var Config = require("../../config");
 
 var createTeam = function (userData, payloadData, callback) {
     var teamDetails;
@@ -72,6 +73,31 @@ var createTeam = function (userData, payloadData, callback) {
                         cb();
                     }
                 })
+            },
+            function (cb) {
+                var taskInParallel = [];
+                for (var key in payloadData.managerIds) {
+                    (function (key) {
+                        taskInParallel.push((function (key) {
+                            return function (embeddedCB) {
+                                Service.UserService.updateUser({
+                                    _id: payloadData.managerIds[key]
+                                }, { userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER }, {
+                                    lean: true
+                                }, function (err, data) {
+                                    if (err) {
+                                        embeddedCB(err)
+                                    } else {
+                                        embeddedCB()
+                                    }
+                                })
+                            }
+                        })(key))
+                    }(key));
+                }
+                async.parallel(taskInParallel, function (err, result) {
+                    cb(null);
+                });
             }
 
         ],
@@ -580,8 +606,19 @@ var promoteUserToManager = function (userData, payloadData, callback) {
                         cb();
                     }
                 })
+            },
+            function (cb) {
+                Service.UserService.updateUser({ _id: payloadData.userId },
+                    { userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER }, {
+                    lean: true
+                }, function (err, data) {
+                    if (err) {
+                        cb(err)
+                    } else {
+                        cb()
+                    }
+                })
             }
-
         ],
         function (err, result) {
             if (err) return callback(err);
@@ -656,6 +693,18 @@ var demoteManagerToUser = function (userData, payloadData, callback) {
                     else {
                         teamDetails = data[0];
                         cb();
+                    }
+                })
+            },
+            function (cb) {
+                Service.UserService.updateUser({ _id: payloadData.managerId },
+                    { userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.USER }, {
+                    lean: true
+                }, function (err, data) {
+                    if (err) {
+                        cb(err)
+                    } else {
+                        cb()
                     }
                 })
             }

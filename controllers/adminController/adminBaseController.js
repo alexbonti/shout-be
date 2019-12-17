@@ -402,14 +402,15 @@ var createUser = function (userData, payloadData, callback) {
       payloadData.initialPassword = UniversalFunctions.generateRandomString();
       payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
       payloadData.emailVerified = true;
-      Service.UserService.createUser(payloadData, function (err, data) {
-        if (err) cb(err)
-        else {
-          newUserData = data;
-          Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
-          cb()
-        }
-      })
+      payloadData.userType = Config.APP_CONSTANTS.DATABASE.USER_ROLES.USER,
+        Service.UserService.createUser(payloadData, function (err, data) {
+          if (err) cb(err)
+          else {
+            newUserData = data;
+            Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
+            cb()
+          }
+        })
     },
     function (cb) {
       if (newUserData) {
@@ -1319,10 +1320,15 @@ var getShoutingTrends = function (userData, callback) {
       });
     },
     function (cb) {
+      let previousYear = (new Date().getFullYear()) - 1
+      let currentYear = new Date('01/01/' + previousYear);
       criteria = [
         {
           $match: {
             adminId: userFound._id,
+            date: {
+              $gt: currentYear
+            }
           }
         },
         {
