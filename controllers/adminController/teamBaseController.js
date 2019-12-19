@@ -678,7 +678,14 @@ var demoteManagerToUser = function (userData, payloadData, callback) {
                     cb()
                 }
             },
-
+            function (cb) {
+                if (teamDetails.managerIds.length == 1) {
+                    cb(ERROR.INVALID_TEAM_MEMBER);
+                }
+                else {
+                    cb();
+                }
+            },
             function (cb) {
                 dataToUpdate = {
                     $addToSet: {
@@ -751,6 +758,15 @@ var removeMemberFromTeam = function (userData, payloadData, callback) {
                         }
                     }
                 })
+            },
+
+            function (cb) {
+                if (teamDetails.managerIds.length == 1) {
+                    cb(ERROR.INVALID_TEAM_MEMBER);
+                }
+                else {
+                    cb();
+                }
             },
 
             function (cb) {
