@@ -10,6 +10,7 @@ var CodeGenerator = require("../../lib/codeGenerator");
 var ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 var _ = require("underscore");
 var Config = require("../../config");
+var NodeMailer = require("../../lib/nodeMailer");
 
 var createUser = function (payloadData, callback) {
   var accessToken = null;
@@ -978,6 +979,378 @@ var resetPassword = function (payloadData, callbackRoute) {
   );
 };
 
+var getManagerTeams = function (userData, callback) {
+  var teamDetails;
+  var adminSummary = [];
+  var teams = [];
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.UserService.getUser(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var path = "managerIds userIds";
+        var select = "firstName lastName";
+        var populate = {
+          path: path,
+          match: {},
+          select: select,
+          options: {
+            lean: true
+          }
+        };
+        var projection = {
+          __v: 0,
+        };
+
+        Service.TeamService.getTeam({
+          isActive: true,
+          managerIds: {
+            $in: [userFound._id]
+          }
+        }, projection, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            teamDetails = data;
+            cb();
+          }
+        });
+      },
+
+      // function (cb) {
+      //   if (teamDetails) {
+      //     var taskInParallel = [];
+      //     for (var key in teamDetails) {
+      //       (function (key) {
+      //         taskInParallel.push((function (key) {
+      //           return function (embeddedCB) {
+      //             var total = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+      //             teams.push({ team: teamDetails[key], totalMembers: total });
+      //             console.log(">>>>>>>>>>>>>", total)
+      //             embeddedCB()
+      //           }
+      //         })(key))
+      //       }(key));
+      //     }
+      //     async.parallel(taskInParallel, function (err, result) {
+      //       cb(null);
+      //     });
+      //   }
+      // }
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { data: teamDetails });
+    }
+  );
+};
+
+var getIndividualManagerTeam = function (userData, payloadData, callback) {
+  var teamDetails;
+  var adminSummary = [];
+  var teams = [];
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.UserService.getUser(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var path = "managerIds userIds";
+        var select = "firstName lastName";
+        var populate = {
+          path: path,
+          match: {},
+          select: select,
+          options: {
+            lean: true
+          }
+        };
+        var projection = {
+          __v: 0,
+        };
+
+        Service.TeamService.getPopulatedUserDetails({
+
+          isActive: true,
+          _id: payloadData.teamId
+        }, projection, populate, {}, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            teamDetails = data;
+            cb();
+          }
+        });
+      },
+
+      function (cb) {
+        if (teamDetails) {
+          var taskInParallel = [];
+          for (var key in teamDetails) {
+            (function (key) {
+              taskInParallel.push((function (key) {
+                return function (embeddedCB) {
+                  var total = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+                  teams.push({ team: teamDetails[key], totalMembers: total });
+                  console.log(">>>>>>>>>>>>>", total)
+                  embeddedCB()
+                }
+              })(key))
+            }(key));
+          }
+          async.parallel(taskInParallel, function (err, result) {
+            cb(null);
+          });
+        }
+      }
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { data: teams });
+    }
+  );
+};
+
+
+var managerShout = function (userData, payloadData, callback) {
+  var userFound;
+  var userDetails;
+  var teamDetails;
+  var teamCredits;
+  var teams = [];
+  var DATA = {};
+  var dataToSend = [];
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.UserService.getUser(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        Service.UserService.getUserExtended({ userId: userFound._id }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            userDetails = data && data[0] || null;
+            cb();
+          }
+        })
+      },
+      function (cb) {
+        Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            teamDetails = data && data[0] || null;
+            teamCredits = data[0].credits;
+            cb();
+          }
+        })
+      },
+
+      function (cb) {
+        console.log("TEAMDETIALS", teamDetails)
+        if (String(teamDetails.managerIds).includes(userFound._id)) {
+          for (var i in payloadData.userIds) {
+            if (String(teamDetails.userIds).includes(payloadData.userIds[i]) || String(teamDetails.managerIds).includes(payloadData.userIds[i])) {
+              cb()
+            }
+            else {
+              cb(ERROR.DEFAULT)
+            }
+          }
+        }
+        else {
+          cb(ERROR.DEFAULT)
+        }
+      },
+
+      function (cb) {
+        if (teamCredits >= (payloadData.credits * payloadData.userIds.length) && payloadData.credits > 0) {
+          cb();
+        }
+        else {
+          cb(ERROR.INVALID_AMOUNT);
+        }
+      },
+
+      function (cb) {
+        var taskInParallel = [];
+        for (var key in payloadData.userIds) {
+          (function (key) {
+            taskInParallel.push((function (key) {
+              return function (embeddedCB) {
+                Service.UserService.getUser({
+                  _id: payloadData.userIds[key]
+                }, {}, {
+                  lean: true
+                }, function (err, data) {
+                  if (err) {
+                    embeddedCB(err)
+                  } else {
+                    teamCredits -= payloadData.credits;
+                    DATA.adminName = userFound.firstName + userFound.lastName;
+                    DATA.receiverId = data[0]._id;
+                    DATA.receiversName = data[0].firstName;
+                    DATA.receiversEmail = data[0].emailId;
+                    DATA.credits = payloadData.credits;
+                    DATA.message = payloadData.message;
+                    console.log(DATA);
+                    dataToSend.push(DATA);
+                    DATA = {};
+                    embeddedCB();
+                  }
+                })
+              }
+            })(key))
+          }(key));
+        }
+        async.parallel(taskInParallel, function (err, result) {
+          cb(null);
+        });
+      },
+
+      function (cb) {
+        dataToUpdate = {
+          $set: {
+            credits: teamCredits
+          }
+        };
+        Service.TeamService.updateTeam({
+          _id: payloadData.teamId
+        }, dataToUpdate, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+
+            if (dataToSend) {
+              var taskInParallel = [];
+              for (var key in dataToSend) {
+                (function (key) {
+                  taskInParallel.push((function (key) {
+                    return function (embeddedCB) {
+                      dataToCreate = {
+                        managerId: userFound._id,
+                        receiverId: dataToSend[key].receiverId,
+                        emailId: dataToSend[key].receiversEmail,
+                        credits: dataToSend[key].credits,
+                        message: dataToSend[key].message,
+                        date: Date.now()
+                      }
+                      //TODO
+                      Service.ShoutTransaction.createShoutTransaction(dataToCreate, function (err, transData) {
+                        if (err) {
+                          embeddedCB(err)
+                        } else {
+                          dataToSend[key].redeemLink = "Somelink/" + transData._id;
+                          console.log("data : ", dataToSend[key])
+                          NodeMailer.sendMail(dataToSend[key]);
+                          embeddedCB()
+                        }
+                      })
+                    }
+                  })(key))
+                }(key));
+              }
+              async.parallel(taskInParallel, function (err, result) {
+                cb(null);
+              });
+            }
+            else {
+              cb();
+            }
+          }
+        })
+      }
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { data: dataToSend });
+    }
+  );
+};
+
+var getManagerShoutedHistory = function (userData, callback) {
+  var history = null;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.UserService.getUser(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER) cb(ERROR.PRIVILEGE_MISMATCH);
+            else cb();
+          }
+        }
+      });
+    },
+
+    function (cb) {
+      console.log("id", userData._id)
+      Service.ShoutTransaction.getShoutTransaction({
+        managerId: userData._id,
+      }, {}, {}, function (err, data) {
+        if (err) {
+          cb(err);
+        } else {
+          history = data
+          cb();
+        }
+      });
+    },
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data: history })
+  })
+}
+
 module.exports = {
   createUser: createUser,
   verifyOTP: verifyOTP,
@@ -989,5 +1362,9 @@ module.exports = {
   getProfile: getProfile,
   changePassword: changePassword,
   forgetPassword: forgetPassword,
-  resetPassword: resetPassword
+  resetPassword: resetPassword,
+  getManagerTeams: getManagerTeams,
+  getIndividualManagerTeam: getIndividualManagerTeam,
+  managerShout: managerShout,
+  getManagerShoutedHistory: getManagerShoutedHistory
 };

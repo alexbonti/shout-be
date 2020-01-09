@@ -4,6 +4,7 @@ var Config = require('../config');
 
 var shoutTransaction = new Schema({
     adminId: { type: Schema.ObjectId, ref: 'admin' },
+    managerId: { type: Schema.ObjectId, ref: 'user' },
     receiverId: { type: Schema.ObjectId, ref: 'user' },
     emailId: { type: String, trim: true, required: true },
     credits: { type: Number },

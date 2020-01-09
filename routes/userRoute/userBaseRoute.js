@@ -9,7 +9,7 @@ var Config = require("../../config");
 var userRegister = {
   method: "POST",
   path: "/api/user/register",
-  handler: function(request, h) {
+  handler: function (request, h) {
     var payloadData = request.payload;
     return new Promise((resolve, reject) => {
       if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
@@ -20,7 +20,7 @@ var userRegister = {
           )
         );
       } else {
-        Controller.UserBaseController.createUser(payloadData, function(
+        Controller.UserBaseController.createUser(payloadData, function (
           err,
           data
         ) {
@@ -81,7 +81,7 @@ var userRegister = {
 var verifyOTP = {
   method: "PUT",
   path: "/api/user/verifyOTP",
-  handler: function(request, h) {
+  handler: function (request, h) {
     var payloadData = request.payload;
     var userData =
       (request.auth &&
@@ -89,7 +89,7 @@ var verifyOTP = {
         request.auth.credentials.userData) ||
       null;
     return new Promise((resolve, reject) => {
-      Controller.UserBaseController.verifyOTP(userData, payloadData, function(
+      Controller.UserBaseController.verifyOTP(userData, payloadData, function (
         err,
         data
       ) {
@@ -132,7 +132,7 @@ var verifyOTP = {
 var login = {
   method: "POST",
   path: "/api/user/login",
-  handler: function(request, h) {
+  handler: function (request, h) {
     var payloadData = request.payload;
     if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
       reject(
@@ -143,7 +143,7 @@ var login = {
       );
     } else {
       return new Promise((resolve, reject) => {
-        Controller.UserBaseController.loginUser(payloadData, function(
+        Controller.UserBaseController.loginUser(payloadData, function (
           err,
           data
         ) {
@@ -181,14 +181,14 @@ var login = {
 var resendOTP = {
   method: "PUT",
   path: "/api/user/resendOTP",
-  handler: function(request, h) {
+  handler: function (request, h) {
     var userData =
       (request.auth &&
         request.auth.credentials &&
         request.auth.credentials.userData) ||
       null;
     return new Promise((resolve, reject) => {
-      Controller.UserBaseController.resendOTP(userData, function(err, data) {
+      Controller.UserBaseController.resendOTP(userData, function (err, data) {
         if (err) {
           reject(UniversalFunctions.sendError(err));
         } else {
@@ -226,10 +226,10 @@ var getOTP = {
   config: {
     description: "get OTP for Customer",
     tags: ["api", "user"],
-    handler: function(request, h) {
+    handler: function (request, h) {
       var userData = request.query;
       return new Promise((resolve, reject) => {
-        Controller.UserBaseController.getOTP(userData, function(
+        Controller.UserBaseController.getOTP(userData, function (
           error,
           success
         ) {
@@ -266,7 +266,7 @@ var accessTokenLogin = {
   /* *****************access token login****************** */
   method: "POST",
   path: "/api/user/accessTokenLogin",
-  handler: function(request, h) {
+  handler: function (request, h) {
     var userData =
       (request.auth &&
         request.auth.credentials &&
@@ -274,7 +274,7 @@ var accessTokenLogin = {
       null;
     var data = request.payload;
     return new Promise((resolve, reject) => {
-      Controller.UserBaseController.accessTokenLogin(userData, function(
+      Controller.UserBaseController.accessTokenLogin(userData, function (
         err,
         data
       ) {
@@ -310,14 +310,14 @@ var logoutCustomer = {
     description: "Logout user",
     auth: "UserAuth",
     tags: ["api", "user"],
-    handler: function(request, h) {
+    handler: function (request, h) {
       var userData =
         (request.auth &&
           request.auth.credentials &&
           request.auth.credentials.userData) ||
         null;
       return new Promise((resolve, reject) => {
-        Controller.UserBaseController.logoutCustomer(userData, function(
+        Controller.UserBaseController.logoutCustomer(userData, function (
           err,
           data
         ) {
@@ -354,7 +354,7 @@ var getProfile = {
     description: "get profile of user",
     auth: "UserAuth",
     tags: ["api", "user"],
-    handler: function(request, h) {
+    handler: function (request, h) {
       var userData =
         (request.auth &&
           request.auth.credentials &&
@@ -362,7 +362,7 @@ var getProfile = {
         null;
       return new Promise((resolve, reject) => {
         if (userData && userData._id) {
-          Controller.UserBaseController.getProfile(userData, function(
+          Controller.UserBaseController.getProfile(userData, function (
             error,
             success
           ) {
@@ -404,7 +404,7 @@ var getProfile = {
 var changePassword = {
   method: "PUT",
   path: "/api/user/changePassword",
-  handler: function(request, h) {
+  handler: function (request, h) {
     var userData =
       (request.auth &&
         request.auth.credentials &&
@@ -414,7 +414,7 @@ var changePassword = {
       Controller.UserBaseController.changePassword(
         userData,
         request.payload,
-        function(err, user) {
+        function (err, user) {
           if (!err) {
             resolve(
               UniversalFunctions.sendSuccess(
@@ -438,8 +438,8 @@ var changePassword = {
       headers: UniversalFunctions.authorizationHeaderObj,
       payload: {
         skip: Joi.boolean().required(),
-        oldPassword: Joi.string().when('skip',{is:false,then: Joi.string().required().min(5),otherwise: Joi.string().optional().allow("")}),
-        newPassword: Joi.string().when('skip',{is:false,then: Joi.string().required().min(5),otherwise: Joi.string().optional().allow("")})
+        oldPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") }),
+        newPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") })
       },
       failAction: UniversalFunctions.failActionFunction
     },
@@ -458,7 +458,7 @@ var forgotPassword = {
   config: {
     description: "forgot password",
     tags: ["api", "user"],
-    handler: function(request, h) {
+    handler: function (request, h) {
       var payloadData = request.payload;
       return new Promise((resolve, reject) => {
         if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
@@ -471,7 +471,7 @@ var forgotPassword = {
         } else {
           Controller.UserBaseController.forgetPassword(
             request.payload,
-            function(error, success) {
+            function (error, success) {
               if (error) {
                 reject(UniversalFunctions.sendError(error));
               } else {
@@ -509,7 +509,7 @@ var resetPassword = {
   config: {
     description: "reset password",
     tags: ["api", "user"],
-    handler: function(request, h) {
+    handler: function (request, h) {
       var payloadData = request.payload;
       return new Promise((resolve, reject) => {
         if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
@@ -520,7 +520,7 @@ var resetPassword = {
             )
           );
         } else {
-          Controller.UserBaseController.resetPassword(request.payload, function(
+          Controller.UserBaseController.resetPassword(request.payload, function (
             error,
             success
           ) {
@@ -559,6 +559,168 @@ var resetPassword = {
   }
 };
 
+var getManagerTeams = {
+  method: "GET",
+  path: "/api/manager/getManagerTeams",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.UserBaseController.getManagerTeams(
+        userData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "get teams",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var getIndividualManagerTeam = {
+  method: "POST",
+  path: "/api/manager/getIndividualManagerTeam",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.UserBaseController.getIndividualManagerTeam(
+        userData,
+        request.payload,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "get IndividualTeam",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction,
+      payload: {
+        teamId: Joi.string().required(),
+      }
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var managerShout = {
+  method: "PUT",
+  path: "/api/manager/shout",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    return new Promise((resolve, reject) => {
+      Controller.UserBaseController.managerShout(userData, request.payload, function (err, data) {
+        if (!err) {
+          resolve(UniversalFunctions.sendSuccess(null, data));
+        } else {
+          reject(UniversalFunctions.sendError(err));
+        }
+      });
+    });
+  },
+  config: {
+    description: "Shout inside team",
+    tags: ["api", "user"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction,
+      payload: {
+        teamId: Joi.string().required(),
+        userIds: Joi.array().required(),
+        message: Joi.string().required(),
+        credits: Joi.number().required(),
+        values: Joi.array().required(),
+      }
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var getManagerShoutedHistory = {
+  method: "GET",
+  path: "/api/manager/getManagerShoutedHistory",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    return new Promise((resolve, reject) => {
+      Controller.UserBaseController.getManagerShoutedHistory(userData, function (err, data) {
+        if (!err) {
+          resolve(UniversalFunctions.sendSuccess(null, data));
+        } else {
+          reject(UniversalFunctions.sendError(err));
+        }
+      });
+    });
+  },
+  config: {
+    description: "get Manager Shouted History",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
 var UserBaseRoute = [
   userRegister,
   verifyOTP,
@@ -570,6 +732,10 @@ var UserBaseRoute = [
   getProfile,
   changePassword,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getManagerTeams,
+  getIndividualManagerTeam,
+  managerShout,
+  getManagerShoutedHistory
 ];
 module.exports = UserBaseRoute;
