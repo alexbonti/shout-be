@@ -768,6 +768,114 @@ var getCompany = function (userData, callback) {
         }
     );
 };
+
+var getCompanyForManager = function (userData, callback) {
+    var companyDetails;
+    var userDetails;
+    async.series(
+        [
+            function (cb) {
+                var criteria = {
+                    _id: userData._id
+                };
+                Service.UserService.getUser(criteria, { password: 0 }, {}, function (err, data) {
+                    if (err) cb(err);
+                    else {
+                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        else {
+                            userFound = (data && data[0]) || null;
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.MANAGER) cb(ERROR.PRIVILEGE_MISMATCH);
+                            else cb();
+                        }
+                    }
+                });
+            },
+
+            function (cb) {
+                Service.UserService.getUserExtended({ userId: userFound._id }, {}, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        userDetails = data && data[0] || null;
+                        cb();
+                    }
+                })
+            },
+
+            function (cb) {
+                Service.CompanyService.getCompany({ _id: userDetails.companyId }, {}, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        if (data.length == 0) cb(ERROR.INVALID_COMPANY_ID)
+                        else {
+                            companyDetails = data && data[0] || null
+                            cb()
+                        }
+                    }
+                })
+            }
+        ],
+        function (err, result) {
+            if (err) return callback(err);
+            else return callback(null, { companyDetails });
+        }
+    );
+};
+
+var getCompanies = function (userData, callback) {
+    var companyDetails;
+    var userDetails;
+    async.series(
+        [
+            function (cb) {
+                var criteria = {
+                    _id: userData._id,
+                    emailId: process.env.SHOUT_OWNER_EMAIL
+                };
+                Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                    if (err) cb(err);
+                    else {
+                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        else {
+                            userFound = (data && data[0]) || null;
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            else cb();
+                        }
+                    }
+                });
+            },
+
+            function (cb) {
+                var select = 'fullName emailId firstLogin'
+                var path = "superAdminId";
+                var populate = {
+                    path: path,
+                    match: {},
+                    select: select,
+                    options: {
+                        lean: true
+                    }
+                };
+                var projection = {
+                    __v: 0,
+                };
+                Service.CompanyService.getPopulatedCompanyDetails({}, projection, populate, {}, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        if (data.length == 0) cb(ERROR.INVALID_COMPANY_ID)
+                        else {
+                            companyDetails = data
+                            cb()
+                        }
+                    }
+                })
+            }
+        ],
+        function (err, result) {
+            if (err) return callback(err);
+            else return callback(null, { companyDetails });
+        }
+    );
+};
 module.exports = {
     // createCompany: createCompany,
     updateCompany: updateCompany,
@@ -775,5 +883,7 @@ module.exports = {
     addValuesToCompany: addValuesToCompany,
     editValuesOfCompany: editValuesOfCompany,
     removeValueFromCompany: removeValueFromCompany,
-    updateCompanyVision: updateCompanyVision
+    updateCompanyVision: updateCompanyVision,
+    getCompanyForManager: getCompanyForManager,
+    getCompanies: getCompanies
 }
