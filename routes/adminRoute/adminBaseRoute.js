@@ -923,6 +923,134 @@ var usersInsideCompany = {
   }
 };
 
+var getMerchantProfile = {
+  method: "POST",
+  path: "/api/owner/getMerchantProfile",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.getMerchantProfile(
+        userData,
+        request.payload,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "get Merchant Profile",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      payload: {
+        merchantId: Joi.string().required()
+      },
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var adminsInsideCompanies = {
+  method: "POST",
+  path: "/api/owner/adminsInsideCompanies",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.adminsInsideCompanies(
+        userData,
+        request.payload,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "admin list Inside Company",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      payload: {
+        companyId: Joi.string().required()
+      },
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var usersInsideCompanies = {
+  method: "POST",
+  path: "/api/owner/usersInsideCompanies",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.usersInsideCompanies(
+        userData,
+        request.payload,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "user list Inside Company",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      payload: {
+        companyId: Joi.string().required()
+      },
+      headers: UniversalFunctions.authorizationHeaderObj,
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
 var AdminBaseRoute = [
   adminLogin,
   accessTokenLogin,
@@ -945,6 +1073,9 @@ var AdminBaseRoute = [
   deleteSuperAdminInsideCompany,
   checkSuperAdminForRights,
   adminsInsideCompany,
-  usersInsideCompany
+  usersInsideCompany,
+  getMerchantProfile,
+  adminsInsideCompanies,
+  usersInsideCompanies
 ];
 module.exports = AdminBaseRoute;
