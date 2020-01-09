@@ -373,6 +373,45 @@ var getClaimStatus = {
     }
 };
 
+var getClaimForMerchant = {
+    method: "POST",
+    path: "/api/owner/getClaimForMerchant",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        return new Promise((resolve, reject) => {
+            Controller.MerchantBaseController.getClaimForMerchant(userData, request.payload, function (err, data) {
+                if (!err) {
+                    resolve(UniversalFunctions.sendSuccess(null, data));
+                } else {
+                    reject(UniversalFunctions.sendError(err));
+                }
+            });
+        });
+    },
+    config: {
+        description: "get Claim For Merchant",
+        tags: ["api", "merchant"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            failAction: UniversalFunctions.failActionFunction,
+            payload: {
+                merchantId: Joi.string().required()
+            }
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
 var updateMerchantProfile = {
     method: "PUT",
     path: "/api/merchant/updateMerchantProfile",
@@ -508,8 +547,6 @@ var confirmMerchantClaim = {
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
             payload: {
-                merchantId: Joi.string().required(),
-                amount: Joi.number().required(),
                 claimId: Joi.string().required()
             },
             failAction: UniversalFunctions.failActionFunction
@@ -602,7 +639,8 @@ var merchantBaseRoute = [
     createClaim,
     confirmMerchantClaim,
     merchantLocationByKeyword,
-    merchantLocationByCoordinates
+    merchantLocationByCoordinates,
+    getClaimForMerchant
 ];
 module.exports = merchantBaseRoute;
 

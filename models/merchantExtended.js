@@ -10,7 +10,6 @@ var merchantExtended = new Schema({
         image: { type: String },
         thumbnail: { type: String }
     },
-    merchantId: { type: Schema.ObjectId, ref: 'merchant' },
     storeName: { type: String },
     location: {
         type: {

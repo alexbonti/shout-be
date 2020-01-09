@@ -71,6 +71,23 @@ var getMerchantPromise = function (criteria, projection, options) {
   });
 };
 
+var getPopulatedMerchantDetails = function (
+  criteria,
+  projection,
+  populate,
+  sortOptions,
+  setOptions,
+  callback
+) {
+  Models.MerchantExtended.find(criteria)
+    .select(projection)
+    .populate(populate)
+    .sort(sortOptions)
+    .exec(function (err, result) {
+      callback(err, result);
+    });
+};
+
 module.exports = {
   updateMerchant: updateMerchant,
   createMerchant: createMerchant,
@@ -84,5 +101,6 @@ module.exports = {
   getMerchantOrders: getMerchantOrders,
   createMerchantClaims: createMerchantClaims,
   getMerchantClaims: getMerchantClaims,
-  updateMerchantClaims: updateMerchantClaims
+  updateMerchantClaims: updateMerchantClaims,
+  getPopulatedMerchantDetails: getPopulatedMerchantDetails
 };

@@ -140,7 +140,7 @@ var createMerchant = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERMADMIN) && userFound.emailId != "anirudh.m0009@gmail.com") cb(ERROR.PRIVILEGE_MISMATCH);
+                            if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERMADMIN) && userFound.emailId != process.env.SHOUT_OWNER_EMAIL) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -198,7 +198,7 @@ var getMerchant = function (userData, callback) {
                     if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                     else {
                         userFound = (data && data[0]) || null;
-                        if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) && userFound.emailId != "anirudh.m0009@gmail.com") cb(ERROR.PRIVILEGE_MISMATCH);
+                        if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) && userFound.emailId != process.env.SHOUT_OWNER_EMAIL) cb(ERROR.PRIVILEGE_MISMATCH);
                         else cb();
                     }
                 }
@@ -232,7 +232,7 @@ var blockUnblockMerchant = function (userData, payloadData, callback) {
                     if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                     else {
                         userFound = (data && data[0]) || null;
-                        if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) && userFound.emailId != "anirudh.m0009@gmail.com") cb(ERROR.PRIVILEGE_MISMATCH);
+                        if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) && userFound.emailId != process.env.SHOUT_OWNER_EMAIL) cb(ERROR.PRIVILEGE_MISMATCH);
                         else cb();
                     }
                 }
@@ -515,6 +515,42 @@ var getClaimStatus = function (userData, callback) {
     })
 }
 
+var getClaimForMerchant = function (userData, payloadData, callback) {
+    var transaction;
+    var claims;
+    async.series([
+        function (cb) {
+            var criteria = {
+                _id: userData._id,
+                emailId: process.env.SHOUT_OWNER_EMAIL
+            };
+            Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                if (err) cb(err);
+                else {
+                    if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                    else {
+                        userFound = (data && data[0]) || null;
+                        cb();
+                    }
+                }
+            });
+        },
+
+        function (cb) {
+            Service.MerchantService.getMerchantClaims({ merchantId: payloadData.merchantId }, { __v: 0, merchantId: 0 }, {}, function (err, data) {
+                if (err) cb(err)
+                else {
+                    claims = data;
+                    cb();
+                }
+            })
+        }
+    ], function (err, result) {
+        if (err) callback(err)
+        else callback(null, { data: claims })
+    })
+}
+
 var updateMerchantProfile = function (userData, payloadData, callback) {
     var adminSummary = null;
     async.series([
@@ -644,12 +680,13 @@ var createClaim = function (userData, payloadData, callback) {
 
 var confirmMerchantClaim = function (userData, payloadData, callback) {
     var adminSummary = null;
+    var claim;
     var merchantSummary;
     async.series([
         function (cb) {
             var criteria = {
                 _id: userData._id,
-                emailId: "anirudh.m0009@gmail.com"
+                emailId: process.env.SHOUT_OWNER_EMAIL
             };
             Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
                 if (err) cb(err);
@@ -663,10 +700,20 @@ var confirmMerchantClaim = function (userData, payloadData, callback) {
             });
         },
 
+        function (cb) {
+            Service.MerchantService.getMerchantClaims({ _id: payloadData.claimId }, {}, {}, function (err, data) {
+                if (err) cb(err)
+                else {
+                    claim = data && data[0] || null;
+                    console.log("!!claim", claim);
+                    cb();
+                }
+            })
+        },
 
         function (cb) {
             var criteria = {
-                merchantId: payloadData.merchantId
+                merchantId: claim.merchantId
             };
             Service.MerchantService.getMerchantExtended(criteria, { password: 0 }, {}, function (err, data) {
                 if (err) cb(err);
@@ -689,7 +736,7 @@ var confirmMerchantClaim = function (userData, payloadData, callback) {
         },
 
         function (cb) {
-            var paid = merchantSummary.paid + payloadData.amount;
+            var paid = merchantSummary.paid + claim.amount;
             Service.MerchantService.updateMerchantExtended({ merchantId: payloadData.merchantId }, { $set: { paid: paid } }, {}, function (err, data) {
                 if (err) cb(err)
                 else cb();
@@ -786,7 +833,8 @@ module.exports = {
     createClaim: createClaim,
     confirmMerchantClaim: confirmMerchantClaim,
     merchantLocationByKeyword: merchantLocationByKeyword,
-    merchantLocationByCoordinates: merchantLocationByCoordinates
+    merchantLocationByCoordinates: merchantLocationByCoordinates,
+    getClaimForMerchant: getClaimForMerchant
 };
 
 

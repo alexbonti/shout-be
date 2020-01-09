@@ -10,5 +10,6 @@ module.exports = {
   ShoutBaseController: require("./shoutController/shoutBaseController"),
   CompanyBaseController: require("./adminController/companyBaseController"),
   TeamBaseController: require("./adminController/teamBaseController"),
-  MerchantBaseController: require("./merchantBaseController/merchantBaseController")
+  MerchantBaseController: require("./merchantBaseController/merchantBaseController"),
+  UploadBaseController: require('./uploadController/uploadBaseController'),
 };

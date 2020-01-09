@@ -738,7 +738,7 @@ var createSuperAdmin = function (userData, payloadData, callback) {
       function (cb) {
         var criteria = {
           _id: userData._id,
-          emailId: "anirudh.m0009@gmail.com"
+          emailId: process.env.SHOUT_OWNER_EMAIL
         };
         Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
           if (err) cb(err);
@@ -1600,6 +1600,174 @@ var usersInsideCompany = function (userData, callback) {
     }
   );
 };
+
+var getMerchantProfile = function (userData, payloadData, callback) {
+  var merchantDetails;
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id,
+          emailId: process.env.SHOUT_OWNER_EMAIL
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var criteria = {
+          merchantId: payloadData.merchantId
+        }
+        var projection = {
+          __v: 0,
+        };
+        Service.MerchantService.getMerchantExtended(criteria, projection, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            if (data.length == 0) cb(ERROR.DEFAULT)
+            else {
+              merchantDetails = data && data[0] || null;
+              cb()
+            }
+          }
+        })
+      }
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { data: merchantDetails });
+    }
+  );
+};
+
+var adminsInsideCompanies = function (userData, payloadData, callback) {
+  var adminSummary;
+  var adminDetails;
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id,
+          emailId: process.env.SHOUT_OWNER_EMAIL
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var path = "adminId";
+        var select = "fullName emailId isBlocked phoneNumber countryCode";
+        var populate = {
+          path: path,
+          match: {},
+          select: select,
+          options: {
+            lean: true
+          }
+        };
+        var projection = {
+          __v: 0,
+          balance: 0,
+          shouting: 0,
+          recognition: 0
+        };
+
+        Service.AdminService.getPopulatedAdmins({
+          companyId: payloadData.companyId,
+        }, projection, populate, {}, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            adminDetails = data;
+            cb();
+          }
+        });
+      },
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { adminDetails: adminDetails });
+    }
+  );
+};
+
+var usersInsideCompanies = function (userData, payloadData, callback) {
+  var adminSummary;
+  var userDetails;
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id,
+          emailId: process.env.SHOUT_OWNER_EMAIL
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var path = "userId";
+        var select = "firstName lastName emailId isBlocked phoneNumber countryCode";
+        var populate = {
+          path: path,
+          match: {},
+          select: select,
+          options: {
+            lean: true
+          }
+        };
+        var projection = {
+          __v: 0,
+          credits: 0,
+        };
+
+        Service.UserService.getPopulatedUsers({
+          companyId: payloadData.companyId,
+        }, projection, populate, {}, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            userDetails = data;
+            cb();
+          }
+        });
+      },
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { userDetails: userDetails });
+    }
+  );
+};
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -1622,5 +1790,8 @@ module.exports = {
   deleteSuperAdminInsideCompany: deleteSuperAdminInsideCompany,
   checkSuperAdminForRights: checkSuperAdminForRights,
   adminsInsideCompany: adminsInsideCompany,
-  usersInsideCompany: usersInsideCompany
+  usersInsideCompany: usersInsideCompany,
+  getMerchantProfile: getMerchantProfile,
+  adminsInsideCompanies: adminsInsideCompanies,
+  usersInsideCompanies: usersInsideCompanies
 };
