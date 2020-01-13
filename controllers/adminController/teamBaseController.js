@@ -761,7 +761,7 @@ var removeMemberFromTeam = function (userData, payloadData, callback) {
             },
 
             function (cb) {
-                if (teamDetails.managerIds.length == 1) {
+                if (teamDetails.managerIds.length == 1 && String(payloadData.memberId) == String(teamDetails.managerIds[0])) {
                     cb(ERROR.INVALID_TEAM_MEMBER);
                 }
                 else {
