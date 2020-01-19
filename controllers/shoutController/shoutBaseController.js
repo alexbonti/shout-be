@@ -274,11 +274,8 @@ var createShout = function (userData, payloadData, callback) {
                         if (err) {
                           embeddedCB(err)
                         } else {
-                          console.log("!!!!!!!!!!!!!!!!!!!!!!", dataToSend[key])
                           transactionIds.push(transData._id)
-                          dataToSend[key].redeemLink = "Somelink/" + transData._id;
-                          console.log(dataToSend[key].redeemLink)
-                          console.log("data : ", dataToSend[key])
+                          dataToSend[key].redeemLink = process.env.REDEEM_LINK + transData._id;
                           NodeMailer.sendMail(dataToSend[key]);
                           embeddedCB()
                         }
