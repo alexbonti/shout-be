@@ -1286,7 +1286,7 @@ var managerShout = function (userData, payloadData, callback) {
                         if (err) {
                           embeddedCB(err)
                         } else {
-                          dataToSend[key].redeemLink = "Somelink/" + transData._id;
+                          dataToSend[key].redeemLink = process.env.REDEEM_LINK + transData._id;
                           console.log("data : ", dataToSend[key])
                           NodeMailer.sendMail(dataToSend[key]);
                           embeddedCB()
