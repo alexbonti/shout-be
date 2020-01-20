@@ -11,6 +11,7 @@ var ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 var _ = require("underscore");
 var Config = require("../../config");
 var NodeMailer = require("../../lib/nodeMailer");
+var mongoose = require("mongoose")
 
 var createUser = function (payloadData, callback) {
   var accessToken = null;
@@ -1183,10 +1184,45 @@ var managerShout = function (userData, payloadData, callback) {
         })
       },
       function (cb) {
-        Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
+        var criteria = [
+          {
+            $match: {
+              _id: mongoose.Types.ObjectId(payloadData.teamId)
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              teamName: 1,
+              adminId: 1,
+              location: 1,
+              companyId: 1,
+              credits: 1,
+              isActive: 1,
+              'managerIds': {
+                '$map': {
+                  'input': '$managerIds',
+                  'as': 'manager',
+                  'in':
+                    { $toString: '$$manager' }
+                }
+              },
+              'userIds': {
+                '$map': {
+                  'input': '$userIds',
+                  'as': 'user',
+                  'in':
+                    { $toString: '$$user' }
+                }
+              }
+            }
+          }
+        ]
+        Service.TeamService.getAggregateTeam(criteria, function (err, data) {
           if (err) cb(err)
           else {
             teamDetails = data && data[0] || null;
+            console.log(data)
             teamCredits = data[0].credits;
             cb();
           }
@@ -1195,10 +1231,12 @@ var managerShout = function (userData, payloadData, callback) {
 
       function (cb) {
         console.log("TEAMDETIALS", teamDetails)
-        if (String(teamDetails.managerIds).includes(userFound._id)) {
+        if ((teamDetails.managerIds).includes(String(userFound._id))) {
           for (var i in payloadData.userIds) {
-            if (String(teamDetails.userIds).includes(payloadData.userIds[i]) || String(teamDetails.managerIds).includes(payloadData.userIds[i])) {
-              cb()
+            if (String(teamDetails.userIds).includes(String(payloadData.userIds[i])) || String(teamDetails.managerIds).includes(String(payloadData.userIds[i]))) {
+              if (i == (payloadData.userIds.length - 1)){
+                cb()
+              }
             }
             else {
               cb(ERROR.DEFAULT)

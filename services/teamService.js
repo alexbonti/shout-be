@@ -40,10 +40,14 @@ var updateTeam = function(criteria, dataToSet, options, callback) {
       });
   };
 
+  var getAggregateTeam = function(criteria, callback) {
+    Models.Team.aggregate(criteria, callback);
+  };
   module.exports = {
       updateTeam : updateTeam,
       createTeam : createTeam,
       deleteTeam : deleteTeam,
       getTeam : getTeam,
-      getPopulatedUserDetails : getPopulatedUserDetails
+      getPopulatedUserDetails : getPopulatedUserDetails,
+      getAggregateTeam: getAggregateTeam
   }
