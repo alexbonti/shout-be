@@ -24,6 +24,14 @@ var createUser = function (payloadData, callback) {
   async.series(
     [
       function (cb) {
+        //verify email address
+        if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+          cb(ERROR.INVALID_EMAIL_FORMAT);
+        } else {
+          cb();
+        }
+      },
+      function (cb) {
         var query = {
           $or: [{ emailId: payloadData.emailId }]
         };
@@ -263,6 +271,14 @@ var loginUser = function (payloadData, callback) {
   var appVersion = null;
   async.series(
     [
+      function (cb) {
+        //verify email address
+        if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+          cb(ERROR.INVALID_EMAIL_FORMAT);
+        } else {
+          cb();
+        }
+      },
       function (cb) {
         var criteria = {
           emailId: payloadData.emailId
@@ -1234,7 +1250,7 @@ var managerShout = function (userData, payloadData, callback) {
         if ((teamDetails.managerIds).includes(String(userFound._id))) {
           for (var i in payloadData.userIds) {
             if (String(teamDetails.userIds).includes(String(payloadData.userIds[i])) || String(teamDetails.managerIds).includes(String(payloadData.userIds[i]))) {
-              if (i == (payloadData.userIds.length - 1)){
+              if (i == (payloadData.userIds.length - 1)) {
                 cb()
               }
             }

@@ -194,6 +194,14 @@ var createAdmin = function (userData, payloadData, callback) {
         });
       },
       function (cb) {
+        //verify email address
+        if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+          cb(ERROR.INVALID_EMAIL_FORMAT);
+        } else {
+          cb();
+        }
+      },
+      function (cb) {
         var criteria = {
           emailId: payloadData.emailId
         }
@@ -379,6 +387,14 @@ var createUser = function (userData, payloadData, callback) {
             cb();
           }
         })
+      }
+    },
+    function (cb) {
+      //verify email address
+      if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+        cb(ERROR.INVALID_EMAIL_FORMAT);
+      } else {
+        cb();
       }
     },
     function (cb) {
@@ -756,6 +772,14 @@ var createSuperAdmin = function (userData, payloadData, callback) {
         });
       },
       function (cb) {
+        //verify email address
+        if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+          cb(ERROR.INVALID_EMAIL_FORMAT);
+        } else {
+          cb();
+        }
+      },
+      function (cb) {
         var criteria = {
           emailId: payloadData.emailId
         }
@@ -868,6 +892,15 @@ var createSuperAdminInsideCompany = function (userData, payloadData, callback) {
           }
         })
       },
+      function (cb) {
+        //verify email address
+        if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+          cb(ERROR.INVALID_EMAIL_FORMAT);
+        } else {
+          cb();
+        }
+      },
+
 
       function (cb) {
         var criteria = {
