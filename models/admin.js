@@ -9,6 +9,7 @@ var Config = require('../config');
 var admin = new Schema({
     emailId: {type: String, unique: true, sparse: true},
     fullName: {type: String},
+    profilePicture: { type: String },
     password: {type: String, required: true},
     accessToken: {type: String, select: false},
     userType: {type: String, enum: [

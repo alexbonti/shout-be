@@ -1804,6 +1804,236 @@ var usersInsideCompanies = function (userData, payloadData, callback) {
     }
   );
 };
+
+var getSpecificUserProfile = function (userData, payloadData, callback) {
+  var user;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb()
+          }
+        }
+      });
+    },
+    function (cb) {
+      var projection = {
+        firstLogin: 0,
+        emailVerified: 0,
+        isBlocked: 0,
+        initialPassword: 0,
+        password: 0,
+        accessToken: 0,
+        codeUpdatedAt: 0,
+        __v: 0
+      }
+      Service.UserService.getUser({ _id: payloadData.userId }, projection, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if (data.length == 0) cb(ERROR.USER_NOT_FOUND)
+          else {
+            user = data && data[0] || null
+            cb()
+          }
+        }
+      })
+    },
+
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { userData: user })
+  })
+}
+
+var editUser = function (userData, payloadData, callback) {
+  var newUserData;
+  var adminDetails;
+  var user;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb()
+          }
+        }
+      });
+    },
+    function (cb) {
+      if (userFound) {
+        Service.AdminService.getAdminExtended({ adminId: userFound._id }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminDetails = data && data[0] || null;
+            cb();
+          }
+        })
+      }
+    },
+    function (cb) {
+      //verify email address
+      if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
+        cb(ERROR.INVALID_EMAIL_FORMAT);
+      } else {
+        cb();
+      }
+    },
+    function (cb) {
+      Service.UserService.getUser({ emailId: payloadData.emailId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if (data.length == 0) cb(ERROR.USER_NOT_FOUND)
+          else cb()
+        }
+      })
+    },
+    function (cb) {
+      if (adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
+        cb(ERROR.INVALID_COMPANY_ID)
+      }
+      else {
+        cb();
+      }
+    },
+    function (cb) {
+      Service.UserService.getUserExtended({ userId: payloadData.userId, companyId: adminDetails.companyId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if (data && data.length == 0) {
+            cb(ERROR.DEFAULT)
+          }
+          else {
+            cb();
+          }
+        }
+      })
+    },
+
+    function (cb) {
+      var dataToSet = {};
+      if (payloadData.profilePicture == "") {
+        dataToSet = {
+          $set: {
+            firstName: payloadData.firstName,
+            lastName: payloadData.lastName,
+            emailId: payloadData.emailId,
+            phoneNumber: payloadData.phoneNumber
+          }
+        }
+      }
+      else {
+        dataToSet = {
+          $set: {
+            firstName: payloadData.firstName,
+            lastName: payloadData.lastName,
+            emailId: payloadData.emailId,
+            profilePicture: payloadData.profilePicture,
+            phoneNumber: payloadData.phoneNumber
+          }
+        }
+      }
+      Service.UserService.updateUser({ _id: payloadData.userId }, dataToSet, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          cb();
+        }
+      })
+    },
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { userData: UniversalFunctions.deleteUnnecessaryUserData(newUserData) })
+  })
+}
+
+var shoutHistoryForSpecificUser = function (userData, payloadData, callback) {
+  var newUserData;
+  var adminDetails;
+  var shout;
+  async.series([
+    function (cb) {
+      var criteria = {
+        _id: userData._id
+      };
+      Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            cb()
+          }
+        }
+      });
+    },
+    function (cb) {
+      if (userFound) {
+        Service.AdminService.getAdminExtended({ adminId: userFound._id }, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminDetails = data && data[0] || null;
+            cb();
+          }
+        })
+      }
+    },
+    function (cb) {
+      Service.UserService.getUser({ _id: payloadData.userId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if (data.length == 0) cb(ERROR.USER_NOT_FOUND)
+          else cb()
+        }
+      })
+    },
+    function (cb) {
+      if (adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
+        cb(ERROR.INVALID_COMPANY_ID)
+      }
+      else {
+        cb();
+      }
+    },
+    function (cb) {
+      Service.UserService.getUserExtended({ userId: payloadData.userId, companyId: adminDetails.companyId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          if (data && data.length == 0) {
+            cb(ERROR.DEFAULT)
+          }
+          else {
+            cb();
+          }
+        }
+      })
+    },
+    function (cb) {
+      Service.ShoutTransaction.getShoutTransaction({ receiverId: payloadData.userId, adminId: userData._id }, { __v: 0 }, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          shout = data;
+          cb();
+        }
+      })
+    }
+  ], function (err, result) {
+    if (err) callback(err)
+    else callback(null, { data: shout })
+  })
+}
+
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -1829,5 +2059,8 @@ module.exports = {
   usersInsideCompany: usersInsideCompany,
   getMerchantProfile: getMerchantProfile,
   adminsInsideCompanies: adminsInsideCompanies,
-  usersInsideCompanies: usersInsideCompanies
+  usersInsideCompanies: usersInsideCompanies,
+  editUser: editUser,
+  shoutHistoryForSpecificUser: shoutHistoryForSpecificUser,
+  getSpecificUserProfile: getSpecificUserProfile
 };

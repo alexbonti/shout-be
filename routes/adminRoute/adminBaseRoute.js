@@ -262,7 +262,8 @@ var createUser = {
         countryCode: Joi.string()
           .max(4)
           .required()
-          .trim()
+          .trim(),
+        profilePicture: Joi.string().optional().allow(""),
       },
       failAction: UniversalFunctions.failActionFunction
     },
@@ -1051,6 +1052,142 @@ var usersInsideCompanies = {
     }
   }
 };
+
+var getSpecificUserProfile = {
+  method: "POST",
+  path: "/api/admin/getSpecificUserProfile",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.getSpecificUserProfile(
+        userData,
+        payloadData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "edit user",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      payload: {
+        userId: Joi.string().required()
+      },
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var editUser = {
+  method: "PUT",
+  path: "/api/admin/editUser",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.editUser(
+        userData,
+        payloadData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "edit user",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      payload: {
+        firstName: Joi.string(),
+        lastName: Joi.string(),
+        emailId: Joi.string(),
+        phoneNumber: Joi.string(),
+        profilePicture: Joi.string().optional().allow("")
+      },
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
+var shoutHistoryForSpecificUser = {
+  method: "POST",
+  path: "/api/admin/shoutHistoryForSpecificUser",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.shoutHistoryForSpecificUser(
+        userData,
+        payloadData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "edit user",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      payload: {
+        userId: Joi.string().required()
+      },
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
 var AdminBaseRoute = [
   adminLogin,
   accessTokenLogin,
@@ -1076,6 +1213,9 @@ var AdminBaseRoute = [
   usersInsideCompany,
   getMerchantProfile,
   adminsInsideCompanies,
-  usersInsideCompanies
+  usersInsideCompanies,
+  editUser,
+  shoutHistoryForSpecificUser,
+  getSpecificUserProfile
 ];
 module.exports = AdminBaseRoute;

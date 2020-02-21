@@ -212,7 +212,7 @@ var getIndividualTeam = function (userData, payloadData, callback) {
 
             function (cb) {
                 var path = "managerIds userIds";
-                var select = "firstName lastName";
+                var select = "firstName lastName profilePicture emailId phoneNumber countryCode";
                 var populate = {
                     path: path,
                     match: {},
