@@ -1128,9 +1128,9 @@ var editUser = {
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
       payload: {
+        userId: Joi.string().required(),
         firstName: Joi.string(),
         lastName: Joi.string(),
-        emailId: Joi.string(),
         phoneNumber: Joi.string(),
         profilePicture: Joi.string().optional().allow("")
       },

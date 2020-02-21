@@ -1884,15 +1884,7 @@ var editUser = function (userData, payloadData, callback) {
       }
     },
     function (cb) {
-      //verify email address
-      if (!UniversalFunctions.verifyEmailFormat(payloadData.emailId)) {
-        cb(ERROR.INVALID_EMAIL_FORMAT);
-      } else {
-        cb();
-      }
-    },
-    function (cb) {
-      Service.UserService.getUser({ emailId: payloadData.emailId }, {}, {}, function (err, data) {
+      Service.UserService.getUser({ _id: payloadData.userId }, {}, {}, function (err, data) {
         if (err) cb(err)
         else {
           if (data.length == 0) cb(ERROR.USER_NOT_FOUND)
@@ -1929,7 +1921,6 @@ var editUser = function (userData, payloadData, callback) {
           $set: {
             firstName: payloadData.firstName,
             lastName: payloadData.lastName,
-            emailId: payloadData.emailId,
             phoneNumber: payloadData.phoneNumber
           }
         }
@@ -1939,7 +1930,6 @@ var editUser = function (userData, payloadData, callback) {
           $set: {
             firstName: payloadData.firstName,
             lastName: payloadData.lastName,
-            emailId: payloadData.emailId,
             profilePicture: payloadData.profilePicture,
             phoneNumber: payloadData.phoneNumber
           }
