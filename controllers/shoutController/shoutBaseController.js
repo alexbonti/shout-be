@@ -262,7 +262,7 @@ var createShout = function (userData, payloadData, callback) {
                   taskInParallel.push((function (key) {
                     return function (embeddedCB) {
                       dataToCreate = {
-                        adminId: adminSummary._id,
+                        adminId: userFound._id,
                         receiverId: dataToSend[key].receiverId,
                         emailId: dataToSend[key].receiversEmail,
                         credits: dataToSend[key].credits,
