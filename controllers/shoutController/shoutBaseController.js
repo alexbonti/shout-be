@@ -122,63 +122,21 @@ var createShout = function (userData, payloadData, callback) {
           cb(null);
         });
       } else {
-        Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
-          if (err) cb(err)
-          else {
-            teamDetails = data && data[0] || null;
-            cb();
-          }
-        })
+        cb();
       }
     },
 
     function (cb) {
-
-      if (teamDetails) {
-        console.log("team")
-        // var taskInParallel = [];
-        // for (var key in teamDetails) {
-        //   (function (key) {
-        //     taskInParallel.push((function (key) {
-        //       return function (embeddedCB) {
-        //         totalMembers = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
-        //         if (payloadData.credits > 0 && amount >= (payloadData.credits * totalMembers)) {
-        //           for (var x in teamDetails[key].managerIds) {
-        //             teamMemberIds.push(teamDetails[key].managerIds[x]);
-        //           }
-        //           for (var y in teamDetails[key].userIds) {
-        //             teamMemberIds.push(teamDetails[key].userIds[y]);
-        //           }
-        //           embeddedCB()
-        //         }
-        //         else {
-        //           cb(ERROR.INVALID_AMOUNT)
-        //         }
-        //       }
-        //     })(key))
-        //   }(key));
-        // }
-        // async.parallel(taskInParallel, function (err, result) {
-        //   cb(null);
-        // });
-        objToSave = {
-          adminId: userData._id,
-          teamId: payloadData.teamId,
-          values: payloadData.values,
-          creditsInTotal: payloadData.credits,
-          date: Date.now()
+      Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          teamDetails = data && data[0] || null;
+          cb();
         }
-        Service.ShoutedTeamHistoryService.createshoutedTeamHistory(objToSave, function (err, data) {
-          if (err) cb(err)
-          else {
-            cb();
-          }
-        })
-      }
-      else {
-        cb()
-      }
+      })
     },
+
+
 
     // function (cb) {
     //   if (teamDetails) {
@@ -236,7 +194,7 @@ var createShout = function (userData, payloadData, callback) {
 
 
     function (cb) {
-      if (!teamDetails) {
+      if (payloadData.teamSkip) {
         console.log(payloadData, amount)
 
         shouting = payloadData.credits * numberOfPeople;
@@ -295,20 +253,43 @@ var createShout = function (userData, payloadData, callback) {
         })
       }
       else {
-        amount -= payloadData.credits;
-        shouting = payloadData.credits;
-        totalshouting = adminSummary.shouting + shouting;
-        recognition = adminSummary.recognition;
-        dataToUpdate = {
-          $set: {
-            balance: amount,
-            shouting: totalshouting,
-            recognition: recognition
-          }
-        };
-        Service.AdminService.updateAdminExtended({
-          adminId: userData._id
-        }, dataToUpdate, {}, function (err, data) {
+        if(amount < payloadData.credits){
+          cb(ERROR.INVALID_AMOUNT);
+        }
+        else{
+          amount -= payloadData.credits;
+          shouting = payloadData.credits;
+          totalshouting = adminSummary.shouting + shouting;
+          recognition = adminSummary.recognition;
+          dataToUpdate = {
+            $set: {
+              balance: amount,
+              shouting: totalshouting,
+              recognition: recognition
+            }
+          };
+          Service.AdminService.updateAdminExtended({
+            adminId: userData._id
+          }, dataToUpdate, {}, function (err, data) {
+            if (err) cb(err)
+            else {
+              cb();
+            }
+          })
+        }
+        
+      }
+    },
+
+    function (cb) {
+      if (payloadData.teamSkip) {
+        console.log("JAOIDHASOIDOIAFOINEI HERE INSTEAD")
+        cb();
+      }
+      else {
+        let temp = teamDetails.credits + payloadData.credits
+        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", temp);
+        Service.TeamService.updateTeam({ _id: payloadData.teamId }, { $set: { credits: temp } }, {}, function (err, data) {
           if (err) cb(err)
           else {
             cb();
@@ -318,19 +299,63 @@ var createShout = function (userData, payloadData, callback) {
     },
 
     function (cb) {
-      if (!teamDetails) {
-        cb();
+
+      let objToSave = {};
+      console.log("team")
+      // var taskInParallel = [];
+      // for (var key in teamDetails) {
+      //   (function (key) {
+      //     taskInParallel.push((function (key) {
+      //       return function (embeddedCB) {
+      //         totalMembers = teamDetails[key].managerIds.length + teamDetails[key].userIds.length
+      //         if (payloadData.credits > 0 && amount >= (payloadData.credits * totalMembers)) {
+      //           for (var x in teamDetails[key].managerIds) {
+      //             teamMemberIds.push(teamDetails[key].managerIds[x]);
+      //           }
+      //           for (var y in teamDetails[key].userIds) {
+      //             teamMemberIds.push(teamDetails[key].userIds[y]);
+      //           }
+      //           embeddedCB()
+      //         }
+      //         else {
+      //           cb(ERROR.INVALID_AMOUNT)
+      //         }
+      //       }
+      //     })(key))
+      //   }(key));
+      // }
+      // async.parallel(taskInParallel, function (err, result) {
+      //   cb(null);
+      // });
+      if (payloadData.teamSkip) {
+        objToSave = {
+          adminId: userData._id,
+          teamId: payloadData.teamId,
+          values: payloadData.values,
+          creditsInTotal: shouting,
+          creditsToEach: payloadData.credits,
+          transactionIds: transactionIds,
+          date: Date.now()
+        }
       }
       else {
-        let temp = teamDetails.credits + payloadData.credits
-        Service.TeamService.updateTeam({ _id: payloadData.teamId }, { $set: { credits: temp } }, {}, function (err, data) {
-          if (err) cb(err)
-          else {
-            cb();
-          }
-        })
+        objToSave = {
+          adminId: userData._id,
+          teamId: payloadData.teamId,
+          values: payloadData.values,
+          creditsInTotal: payloadData.credits,
+          date: Date.now()
+        }
       }
-    }
+
+      Service.ShoutedTeamHistoryService.createshoutedTeamHistory(objToSave, function (err, data) {
+        if (err) cb(err)
+        else {
+          cb();
+        }
+      })
+
+    },
     // function (cb) {
     //   if (!teamDetails) {
     //     if (dataToSend.length > 0) {

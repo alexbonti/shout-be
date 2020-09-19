@@ -262,7 +262,11 @@ var createUser = {
         countryCode: Joi.string()
           .max(4)
           .required()
-          .trim()
+          .trim(),
+        profilePicture: Joi.object({
+          original: Joi.string(),
+          thumbnail: Joi.string()
+        }).optional()
       },
       failAction: UniversalFunctions.failActionFunction
     },
@@ -1051,6 +1055,69 @@ var usersInsideCompanies = {
     }
   }
 };
+
+var updateUser = {
+  method: "PUT",
+  path: "/api/admin/updateUser",
+  handler: function (request, h) {
+    var userData =
+      (request.auth &&
+        request.auth.credentials &&
+        request.auth.credentials.userData) ||
+      null;
+    var payloadData = request.payload;
+    return new Promise((resolve, reject) => {
+      Controller.AdminBaseController.updateUser(
+        userData,
+        payloadData,
+        function (err, data) {
+          if (!err) {
+            resolve(UniversalFunctions.sendSuccess(null, data));
+          } else {
+            reject(UniversalFunctions.sendError(err));
+          }
+        }
+      );
+    });
+  },
+  config: {
+    description: "Update User Detail",
+    tags: ["api", "admin"],
+    auth: "UserAuth",
+    validate: {
+      headers: UniversalFunctions.authorizationHeaderObj,
+      payload: {
+        userId: Joi.string().required(),
+        profilePicture: Joi.object({
+          original: Joi.string(),
+          thumbnail: Joi.string()
+        }).optional(),
+        firstName: Joi.string()
+          .regex(/^[a-zA-Z ]+$/)
+          .trim()
+          .min(2)
+          .required(),
+        lastName: Joi.string()
+          .regex(/^[a-zA-Z ]+$/)
+          .trim()
+          .min(2)
+          .required(),
+        phoneNumber: Joi.string()
+          .regex(/^[0-9]+$/)
+          .min(5)
+          .required(),
+      },
+      failAction: UniversalFunctions.failActionFunction
+    },
+    plugins: {
+      "hapi-swagger": {
+        responseMessages:
+          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+      }
+    }
+  }
+};
+
 var AdminBaseRoute = [
   adminLogin,
   accessTokenLogin,
@@ -1076,6 +1143,7 @@ var AdminBaseRoute = [
   usersInsideCompany,
   getMerchantProfile,
   adminsInsideCompanies,
-  usersInsideCompanies
+  usersInsideCompanies,
+  updateUser
 ];
 module.exports = AdminBaseRoute;

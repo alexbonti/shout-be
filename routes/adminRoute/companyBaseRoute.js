@@ -335,6 +335,54 @@ var updateCompanyVision = {
     }
 };
 
+var updateCompanyTeamsConfig = {
+    method: "PUT",
+    path: "/api/admin/updateCompanyTeamsConfig",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.payload;
+        return new Promise((resolve, reject) => {
+            Controller.CompanyBaseController.updateCompanyTeamsConfig(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "update company teams' config",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            payload: {
+                teamsConfig: Joi.object({
+                    attentionSpan: Joi.number().required(),
+                    recognitionSpan: Joi.number().required(),
+                    recognition: Joi.number().required(),
+                }).required(),
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
 var getCompanyForManager = {
     method: "GET",
     path: "/api/manager/getCompanyForManager",
@@ -421,5 +469,6 @@ module.exports = [
     removeValueFromCompany,
     updateCompanyVision,
     getCompanyForManager,
-    getCompanies
+    getCompanies,
+    updateCompanyTeamsConfig
 ]

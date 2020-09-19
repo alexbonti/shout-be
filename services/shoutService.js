@@ -18,9 +18,27 @@
    Models.ShoutTransaction.find(criteria, projection, options, callback);
  };
  
+ var getPopulatedHistories = function (
+  criteria,
+  projection,
+  populate,
+  sortOptions,
+  setOptions,
+  callback
+) {
+  Models.ShoutTransaction.find(criteria)
+    .select(projection)
+    .populate(populate)
+    .sort(sortOptions)
+    .exec(function (err, result) {
+      callback(err, result);
+    });
+};
+
  module.exports = {
     updateShoutTransaction: updateShoutTransaction,
     createShoutTransaction: createShoutTransaction,
     getShoutTransaction: getShoutTransaction,
+    getPopulatedHistories: getPopulatedHistories
  };
  

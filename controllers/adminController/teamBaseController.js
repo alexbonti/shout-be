@@ -212,7 +212,7 @@ var getIndividualTeam = function (userData, payloadData, callback) {
 
             function (cb) {
                 var path = "managerIds userIds";
-                var select = "firstName lastName";
+                var select = "firstName lastName profilePicture";
                 var populate = {
                     path: path,
                     match: {},
@@ -794,6 +794,61 @@ var removeMemberFromTeam = function (userData, payloadData, callback) {
 };
 
 
+var getSpecificUserHistory = function (userData, payloadData, callback) {
+    var userHistory;
+    async.series(
+        [
+            function (cb) {
+                var criteria = {
+                    _id: userData._id
+                };
+                Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                    if (err) cb(err);
+                    else {
+                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        else {
+                            userFound = (data && data[0]) || null;
+                            cb();
+                        }
+                    }
+                });
+            },
+
+            function (cb) {
+                var path = "receiverId adminId managerId";
+                var select = "firstName lastName";
+                var populate = {
+                    path: path,
+                    match: {},
+                    select: select,
+                    options: {
+                        lean: true
+                    }
+                };
+                var projection = {
+                    __v: 0,
+                };
+
+                Service.ShoutTransaction.getPopulatedHistories({
+                    receiverId: payloadData.userId,
+                }, projection, populate, {}, {}, function (err, data) {
+                    if (err) {
+                        cb(err);
+                    } else {
+                        userHistory = data;
+                        cb();
+                    }
+                });
+
+            }
+        ],
+        function (err, result) {
+            if (err) return callback(err);
+            else return callback(null, { data: userHistory });
+        }
+    );
+};
+
 module.exports = {
     createTeam: createTeam,
     getTeams: getTeams,
@@ -804,5 +859,6 @@ module.exports = {
     demoteManagerToUser: demoteManagerToUser,
     removeMemberFromTeam: removeMemberFromTeam,
     deleteTeam: deleteTeam,
-    getIndividualTeam: getIndividualTeam
+    getIndividualTeam: getIndividualTeam,
+    getSpecificUserHistory: getSpecificUserHistory
 }

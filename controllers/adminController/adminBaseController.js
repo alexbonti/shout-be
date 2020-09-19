@@ -1051,6 +1051,8 @@ var getAdminTeamShoutedHistory = function (userData, callback) {
 var getMostRecognisedTeam = function (userData, callback) {
   var history = null;
   var mostRecognised = [];
+  var adminSummary;
+  var companyDetails;
   async.series([
     function (cb) {
       var criteria = {
@@ -1068,10 +1070,39 @@ var getMostRecognisedTeam = function (userData, callback) {
       });
     },
     function (cb) {
+      var criteria = {
+        adminId: userData._id
+      }
+      Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          adminSummary = data && data[0] || null;
+          cb();
+        }
+      })
+    },
+
+    function (cb) {
+      var criteria = {
+        _id: adminSummary.companyId
+      }
+      Service.CompanyService.getCompany(criteria, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          companyDetails = data && data[0] || null;
+          cb();
+        }
+      })
+    },
+
+    function (cb) {
+      console.log(companyDetails);
+      let date = new Date(Date.now() - (1000 * 86400 * companyDetails.teamsConfig.recognitionSpan));
       criteria = [
         {
           $match: {
             adminId: userFound._id,
+            date: { $gte: date }
           }
         }, {
           $group: {
@@ -1084,7 +1115,7 @@ var getMostRecognisedTeam = function (userData, callback) {
         {
           $project: {
             teams: {
-              $gte: ['$total', 80]
+              $gte: ['$total', companyDetails.teamsConfig.recognition],
             }
           }
         }
@@ -1107,8 +1138,7 @@ var getMostRecognisedTeam = function (userData, callback) {
           (function (key) {
             taskInParallel.push((function (key) {
               return function (embeddedCB) {
-
-                Service.TeamService.getTeam({ adminId: userFound._id, _id: history[key]._id }, {}, {}, function (err, data) {
+                Service.TeamService.getTeam({ adminId: userFound._id, companyId: adminSummary.companyId, _id: history[key]._id }, {}, {}, function (err, data) {
                   if (err) cb(err)
                   else {
                     var temp = {};
@@ -1163,8 +1193,10 @@ var getTeamNeedsAttention = function (userData, callback) {
   var teamIdsNotFound = [];
   var mostRecognised = {};
   var teamNeedsAttention = [];
+  var adminSummary;
   var teams = [];
   var temp = {};
+  var companyDetails;
   async.series([
     function (cb) {
       var criteria = {
@@ -1183,7 +1215,33 @@ var getTeamNeedsAttention = function (userData, callback) {
     },
 
     function (cb) {
-      Service.TeamService.getTeam({ adminId: userFound._id, isActive: true }, {}, {}, function (err, data) {
+      var criteria = {
+        adminId: userData._id
+      }
+      Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          adminSummary = data && data[0] || null;
+          cb();
+        }
+      })
+    },
+
+    function (cb) {
+      var criteria = {
+        _id: adminSummary.companyId
+      }
+      Service.CompanyService.getCompany(criteria, {}, {}, function (err, data) {
+        if (err) cb(err)
+        else {
+          companyDetails = data && data[0] || null;
+          cb();
+        }
+      })
+    },
+
+    function (cb) {
+      Service.TeamService.getTeam({ companyId: adminSummary.companyId, isActive: true }, {}, {}, function (err, data) {
         if (err) cb(err)
         else {
           if (data.length == 0) {
@@ -1240,8 +1298,7 @@ var getTeamNeedsAttention = function (userData, callback) {
                 criteria = {
                   adminId: userFound._id,
                   teamId: newTeamIds[key],
-                  isActive: true,
-                  date: { $gte: new Date(Date.now() - 1000 * 86400 * 45) }
+                  date: { $gte: new Date(Date.now() - 1000 * 86400 * companyDetails.teamsConfig.attentionSpan) }
                 }
                 Service.ShoutedTeamHistoryService.getShoutedTeamHistory(criteria, {}, {}, function (err, data) {
                   if (err) cb(err)
@@ -1570,7 +1627,7 @@ var usersInsideCompany = function (userData, callback) {
       },
       function (cb) {
         var path = "userId";
-        var select = "firstName lastName emailId isBlocked phoneNumber countryCode";
+        var select = "firstName lastName emailId isBlocked phoneNumber countryCode profilePicture";
         var populate = {
           path: path,
           match: {},
@@ -1738,7 +1795,7 @@ var usersInsideCompanies = function (userData, payloadData, callback) {
 
       function (cb) {
         var path = "userId";
-        var select = "firstName lastName emailId isBlocked phoneNumber countryCode";
+        var select = "firstName lastName emailId isBlocked phoneNumber countryCode ";
         var populate = {
           path: path,
           match: {},
@@ -1771,6 +1828,75 @@ var usersInsideCompanies = function (userData, payloadData, callback) {
     }
   );
 };
+
+var updateUser = function (userData, payloadData, callback) {
+  var adminSummary;
+  var userDetails;
+  async.series(
+    [
+      function (cb) {
+        var criteria = {
+          _id: userData._id
+        };
+        Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+            else {
+              userFound = (data && data[0]) || null;
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              else cb();
+            }
+          }
+        });
+      },
+
+      function (cb) {
+        var criteria = {
+          adminId: userData._id
+        }
+        Service.AdminService.getAdminExtended(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            adminSummary = data && data[0] || null;
+            cb();
+          }
+        })
+      },
+
+      function (cb) {
+        Service.UserService.getUser({ _id: payloadData.userId, companyId: adminSummary.companyId }, {}, {}, function (err, data) {
+          if (err) cb(ERROR.USER_NOT_FOUND);
+          else cb();
+        })
+      },
+
+      function (cb) {
+        let dataToSet = {
+          $set: {
+            profilePicture: payloadData.profilePicture,
+            firstName: payloadData.firstName,
+            lastName: payloadData.lastName,
+            phoneNumber: payloadData.phoneNumber
+          }
+        }
+        Service.UserService.updateUser({ _id: payloadData.userId }, dataToSet, {}, function (err, data) {
+          if (err) cb(err);
+          else {
+            userDetails = data && data[0];
+            cb();
+          }
+        })
+      }
+
+    ],
+    function (err, result) {
+      if (err) return callback(err);
+      else return callback(null, { userDetails: userDetails });
+    }
+  );
+};
+
 module.exports = {
   adminLogin: adminLogin,
   accessTokenLogin: accessTokenLogin,
@@ -1796,5 +1922,6 @@ module.exports = {
   usersInsideCompany: usersInsideCompany,
   getMerchantProfile: getMerchantProfile,
   adminsInsideCompanies: adminsInsideCompanies,
-  usersInsideCompanies: usersInsideCompanies
+  usersInsideCompanies: usersInsideCompanies,
+  updateUser: updateUser
 };

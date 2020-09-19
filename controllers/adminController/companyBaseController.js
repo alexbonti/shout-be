@@ -382,6 +382,66 @@ var updateCompanyVision = function (userData, payloadData, callback) {
     );
 };
 
+var updateCompanyTeamsConfig = function (userData, payloadData, callback) {
+    var companyDetails;
+    async.series(
+        [
+            function (cb) {
+                var criteria = {
+                    _id: userData._id
+                };
+                Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
+                    if (err) cb(err);
+                    else {
+                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        else {
+                            userFound = (data && data[0]) || null;
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            else cb();
+                        }
+                    }
+                });
+            },
+            function (cb) {
+                Service.CompanyService.getCompany({ superAdminId: userFound._id }, {}, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        if (data.length == 0) cb(ERROR.INVALID_COMPANY_ID)
+                        else {
+                            companyDetails = data && data[0] || null
+                            cb()
+                        }
+                    }
+                })
+            },
+
+            function (cb) {
+
+                var dataToUpdate = {
+                    $set: {
+                        teamsConfig: payloadData.teamsConfig,
+                    }
+                };
+                var condition = {
+                    superAdminId: userFound._id,
+                    _id: companyDetails._id,
+                };
+                Service.CompanyService.updateCompany(condition, dataToUpdate, {}, function (err, data) {
+                    if (err) cb(err)
+                    else {
+                        companyDetails = data
+                        cb();
+                    }
+                })
+            }
+        ],
+        function (err, result) {
+            if (err) return callback(err);
+            else return callback(null, { companyDetails });
+        }
+    );
+};
+
 /////////////////////////////////////////////////////////////////////////////
 /* 3rd layer model
 var updateCompany = function (userData, payloadData, callback) {
@@ -885,5 +945,6 @@ module.exports = {
     removeValueFromCompany: removeValueFromCompany,
     updateCompanyVision: updateCompanyVision,
     getCompanyForManager: getCompanyForManager,
-    getCompanies: getCompanies
+    getCompanies: getCompanies,
+    updateCompanyTeamsConfig: updateCompanyTeamsConfig
 }

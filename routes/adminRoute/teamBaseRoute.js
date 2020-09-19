@@ -449,6 +449,51 @@ var removeMemberFromTeam = {
         }
     }
 };
+
+var getSpecificUserHistory = {
+    method: "GET",
+    path: "/api/admin/getSpecificUserHistory/{userId}",
+    handler: function (request, h) {
+        var userData =
+            (request.auth &&
+                request.auth.credentials &&
+                request.auth.credentials.userData) ||
+            null;
+        var payloadData = request.params;
+        return new Promise((resolve, reject) => {
+            Controller.TeamBaseController.getSpecificUserHistory(
+                userData,
+                payloadData,
+                function (err, data) {
+                    if (!err) {
+                        resolve(UniversalFunctions.sendSuccess(null, data));
+                    } else {
+                        reject(UniversalFunctions.sendError(err));
+                    }
+                }
+            );
+        });
+    },
+    config: {
+        description: "Get specific user History",
+        tags: ["api", "admin"],
+        auth: "UserAuth",
+        validate: {
+            headers: UniversalFunctions.authorizationHeaderObj,
+            params: {
+                userId: Joi.string().required(),
+            },
+            failAction: UniversalFunctions.failActionFunction
+        },
+        plugins: {
+            "hapi-swagger": {
+                responseMessages:
+                    UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
+            }
+        }
+    }
+};
+
 module.exports = [
     createTeam,
     getTeams,
@@ -459,5 +504,6 @@ module.exports = [
     demoteManagerToUser,
     removeMemberFromTeam,
     deleteTeam,
-    getIndividualTeam
+    getIndividualTeam,
+    getSpecificUserHistory
 ]
