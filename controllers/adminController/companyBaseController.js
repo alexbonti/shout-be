@@ -894,7 +894,7 @@ var getCompanies = function (userData, callback) {
                 Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
                     if (err) cb(err);
                     else {
-                        if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                        if (!data) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
                             if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
