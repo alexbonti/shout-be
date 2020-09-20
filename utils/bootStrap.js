@@ -7,7 +7,15 @@ exports.bootstrapAdmin = function (callbackParent) {
     var taskToRunInParallel = [];
 
     var adminData = [
-        {
+         {
+		             emailId: 'shin@admin.com',
+		             password: UniversalFunctions.CryptData("123456"),
+		             fullName: 'Shin Lee',
+		             userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN,
+		             createdAt: UniversalFunctions.getTimestamp(),
+		             firstLogin: true
+		         },
+	    {
             emailId: 'launchpad@admin.com',
             password: UniversalFunctions.CryptData("123456"),
             fullName: 'Launchpad Admin',
