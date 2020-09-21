@@ -213,7 +213,6 @@ var createAdmin = function (userData, payloadData, callback) {
           if (err) cb(err)
           else {
             adminSummary = data && data[0] || null;
-            console.log("!!!!!!!!!!!!!!!!!!!!", adminSummary)
             cb()
           }
         })
@@ -351,13 +350,14 @@ var blockUnblockAdmin = function (userData, payloadData, callback) {
   })
 }
 
-var createUser = function (userData, payloadData, callback) {
+var createUser = function (adminData, payloadData, callback) {
   var newUserData;
   var adminDetails;
+  var userData = {};
   async.series([
     function (cb) {
       var criteria = {
-        _id: userData._id
+        _id: adminData._id
       };
       Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
         if (err) cb(err);
@@ -399,18 +399,32 @@ var createUser = function (userData, payloadData, callback) {
       }
     },
     function (cb) {
-      payloadData.initialPassword = UniversalFunctions.generateRandomString();
-      payloadData.password = UniversalFunctions.CryptData(payloadData.initialPassword);
-      payloadData.emailVerified = true;
-      payloadData.userType = Config.APP_CONSTANTS.DATABASE.USER_ROLES.USER,
-        Service.UserService.createUser(payloadData, function (err, data) {
-          if (err) cb(err)
-          else {
-            newUserData = data;
-            Nodemailer.sendAccountMail(payloadData.emailId, payloadData.initialPassword);
-            cb()
-          }
-        })
+      if (payloadData.firstName === undefined || payloadData === "") cb(ERROR.MISSING_USER_DATA);
+      else if (payloadData.lastName === undefined || payloadData === "") cb(ERROR.MISSING_USER_DATA);
+      else if (payloadData.emailId === undefined || payloadData === "") cb(ERROR.MISSING_USER_DATA);
+      else if (payloadData.phoneNumber === undefined || payloadData === "") cb(ERROR.MISSING_USER_DATA);
+      else if (payloadData.countryCode === undefined || payloadData === "") cb(ERROR.MISSING_USER_DATA);
+      else {
+        userData.firstName = payloadData.firstName;
+        userData.lastName = payloadData.lastName;
+        userData.emailId = payloadData.emailId;
+        userData.phoneNumber = payloadData.phoneNumber;
+        userData.countryCode = payloadData.countryCode;
+        if (payloadData.profilePicture !== undefined && payloadData.profilePicture !== "")
+          userData.profilePicture = payloadData.profilePicture;
+        userData.initialPassword = UniversalFunctions.generateRandomString();
+        userData.password = UniversalFunctions.CryptData(userData.initialPassword);
+        userData.emailVerified = true;
+        userData.userType = Config.APP_CONSTANTS.DATABASE.USER_ROLES.USER,
+          Service.UserService.createUser(userData, function (err, data) {
+            if (err) cb(err)
+            else {
+              newUserData = data;
+              Nodemailer.sendAccountMail(userData.emailId, userData.initialPassword);
+              cb()
+            }
+          })
+      }
     },
     function (cb) {
       if (newUserData) {
@@ -942,7 +956,7 @@ var deleteSuperAdminInsideCompany = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1192,7 +1206,7 @@ var getTeamNeedsAttention = function (userData, callback) {
   var teamIdsNotFound = [];
   var mostRecognised = {};
   var teamNeedsAttention = [];
-  var adminSummary;
+  var adminSummary = false;
   var teams = [];
   var temp = {};
   var companyDetails;
@@ -1227,16 +1241,19 @@ var getTeamNeedsAttention = function (userData, callback) {
     },
 
     function (cb) {
-      var criteria = {
-        _id: adminSummary.companyId
-      }
-      Service.CompanyService.getCompany(criteria, {}, {}, function (err, data) {
-        if (err) cb(err)
-        else {
-          companyDetails = data && data[0] || null;
-          cb();
+      if (adminSummary == false) cb(ERROR.MISSING_EXTENDED_PROFILE);
+      else {
+        var criteria = {
+          _id: adminSummary.companyId
         }
-      })
+        Service.CompanyService.getCompany(criteria, {}, {}, function (err, data) {
+          if (err) cb(err)
+          else {
+            companyDetails = data && data[0] || null;
+            cb();
+          }
+        })
+      }
     },
 
     function (cb) {
@@ -1472,7 +1489,7 @@ var checkSuperAdminForRights = function (userData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1533,7 +1550,7 @@ var adminsInsideCompany = function (userData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1605,7 +1622,7 @@ var usersInsideCompany = function (userData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1674,7 +1691,7 @@ var getMerchantProfile = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1722,7 +1739,7 @@ var adminsInsideCompanies = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1782,7 +1799,7 @@ var usersInsideCompanies = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1840,7 +1857,7 @@ var updateUser = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }

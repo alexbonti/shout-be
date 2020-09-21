@@ -266,7 +266,7 @@ var createUser = {
         profilePicture: Joi.object({
           original: Joi.string(),
           thumbnail: Joi.string()
-        }).optional()
+        }).optional().allow('')
       },
       failAction: UniversalFunctions.failActionFunction
     },
@@ -1091,7 +1091,7 @@ var updateUser = {
         profilePicture: Joi.object({
           original: Joi.string(),
           thumbnail: Joi.string()
-        }).optional(),
+        }).optional().allow(''),
         firstName: Joi.string()
           .regex(/^[a-zA-Z ]+$/)
           .trim()

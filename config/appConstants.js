@@ -232,6 +232,16 @@ var STATUS_MSG = {
       customMessage: "Team member does not exist",
       type: "INVALID_TEAM_MEMBER"
     },
+    MISSING_EXTENDED_PROFILE: {
+      statusCode: 400,
+      customMessage: "Extended Profile Missing",
+      type: "MISSING_EXTENDED_PROFILE"
+    },
+    MISSING_USER_DATA: {
+      statusCode: 400,
+      customMessage: "User Data Missing",
+      type: "MISSING_USER_DATA"
+    },
   },
   SUCCESS: {
     DEFAULT: {
