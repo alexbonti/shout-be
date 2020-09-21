@@ -7,15 +7,23 @@ exports.bootstrapAdmin = function (callbackParent) {
     var taskToRunInParallel = [];
 
     var adminData = [
-         {
-		             emailId: 'shin@admin.com',
-		             password: UniversalFunctions.CryptData("123456"),
-		             fullName: 'Shin Lee',
-		             userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN,
-		             createdAt: UniversalFunctions.getTimestamp(),
-		             firstLogin: true
-		         },
-	    {
+        {
+            emailId: 'shin@admin.com',
+            password: UniversalFunctions.CryptData("123456"),
+            fullName: 'Shin Lee',
+            userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER,
+            createdAt: UniversalFunctions.getTimestamp(),
+            firstLogin: true
+        },
+        {
+            emailId: 'owner@admin.com',
+            password: UniversalFunctions.CryptData("secretpassword"),
+            fullName: 'Owner 2',
+            userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER,
+            createdAt: UniversalFunctions.getTimestamp(),
+            firstLogin: true
+        },
+        {
             emailId: 'launchpad@admin.com',
             password: UniversalFunctions.CryptData("123456"),
             fullName: 'Launchpad Admin',
@@ -58,11 +66,11 @@ exports.bootstrapAdmin = function (callbackParent) {
 function insertData(adminData, callbackParent) {
     var _skip = false
     async.series([
-        function(cb){
-            Service.AdminService.getAdmin({emailId:adminData.emailId},{},{},function(err,data){
-                if(err) cb(err)
+        function (cb) {
+            Service.AdminService.getAdmin({ emailId: adminData.emailId }, {}, {}, function (err, data) {
+                if (err) cb(err)
                 else {
-                    if(data.length != 0) {
+                    if (data.length != 0) {
                         _skip = true;
                         cb()
                     }
@@ -70,14 +78,14 @@ function insertData(adminData, callbackParent) {
                 }
             })
         },
-        function(cb){
-            if(!_skip){
+        function (cb) {
+            if (!_skip) {
                 Service.AdminService.createAdmin(adminData, function (err, response) {
-                    if(err){
-                        console.log("Implementation err",err);
+                    if (err) {
+                        console.log("Implementation err", err);
                         cb(err)
                     }
-                    else{
+                    else {
                         console.log("Admin Added Succesfully");
                         cb()
                     }
@@ -85,11 +93,11 @@ function insertData(adminData, callbackParent) {
             }
             else cb()
         }
-    ],function(err,result){
-        if(err) return callbackParent(err)
+    ], function (err, result) {
+        if (err) return callbackParent(err)
         else {
             return callbackParent(null);
         }
     })
-    
+
 }

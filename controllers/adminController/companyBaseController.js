@@ -71,7 +71,7 @@ var updateCompany = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -142,7 +142,7 @@ var addValuesToCompany = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -203,7 +203,7 @@ var editValuesOfCompany = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -269,7 +269,7 @@ var removeValueFromCompany = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -336,7 +336,7 @@ var updateCompanyVision = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -396,7 +396,7 @@ var updateCompanyTeamsConfig = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -780,7 +780,7 @@ var removeValueFromCompany = function (userData, payloadData, callback) {
 
 var getCompany = function (userData, callback) {
     var companyDetails;
-    var userDetails;
+    var userDetails = false;
     async.series(
         [
             function (cb) {
@@ -808,9 +808,10 @@ var getCompany = function (userData, callback) {
                     }
                 })
             },
-
             function (cb) {
-                Service.CompanyService.getCompany({ _id: userDetails.companyId }, {}, {}, function (err, data) {
+                if (userDetails == false) cb(ERROR.USER_NOT_FOUND);
+                else if (userDetails == null) cb(ERROR.INVALID_USERTYPE)
+                else Service.CompanyService.getCompany({ _id: userDetails.companyId }, {}, {}, function (err, data) {
                     if (err) cb(err)
                     else {
                         if (data.length == 0) cb(ERROR.INVALID_COMPANY_ID)
@@ -889,7 +890,7 @@ var getCompanies = function (userData, callback) {
             function (cb) {
                 var criteria = {
                     _id: userData._id,
-                    emailId: process.env.SHOUT_OWNER_EMAIL
+                    userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER
                 };
                 Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
                     if (err) cb(err);
@@ -897,7 +898,7 @@ var getCompanies = function (userData, callback) {
                         if (!data) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -921,7 +922,7 @@ var getCompanies = function (userData, callback) {
                 Service.CompanyService.getPopulatedCompanyDetails({}, projection, populate, {}, {}, function (err, data) {
                     if (err) cb(err)
                     else {
-                        if (data.length == 0) cb(ERROR.INVALID_COMPANY_ID)
+                        if (!data) cb(ERROR.INVALID_COMPANY_ID)
                         else {
                             companyDetails = data
                             cb()

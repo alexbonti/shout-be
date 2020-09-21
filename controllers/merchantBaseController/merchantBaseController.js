@@ -140,7 +140,7 @@ var createMerchant = function (userData, payloadData, callback) {
                         if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                         else {
                             userFound = (data && data[0]) || null;
-                            if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERMADMIN) && userFound.emailId != process.env.SHOUT_OWNER_EMAIL) cb(ERROR.PRIVILEGE_MISMATCH);
+                            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                             else cb();
                         }
                     }
@@ -198,7 +198,7 @@ var getMerchant = function (userData, callback) {
                     if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                     else {
                         userFound = (data && data[0]) || null;
-                        if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) && userFound.emailId != process.env.SHOUT_OWNER_EMAIL) cb(ERROR.PRIVILEGE_MISMATCH);
+                        if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                         else cb();
                     }
                 }
@@ -232,7 +232,7 @@ var blockUnblockMerchant = function (userData, payloadData, callback) {
                     if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
                     else {
                         userFound = (data && data[0]) || null;
-                        if ((userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) && userFound.emailId != process.env.SHOUT_OWNER_EMAIL) cb(ERROR.PRIVILEGE_MISMATCH);
+                        if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
                         else cb();
                     }
                 }
@@ -522,7 +522,7 @@ var getClaimForMerchant = function (userData, payloadData, callback) {
         function (cb) {
             var criteria = {
                 _id: userData._id,
-                emailId: process.env.SHOUT_OWNER_EMAIL
+                userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER
             };
             Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
                 if (err) cb(err);
@@ -686,7 +686,7 @@ var confirmMerchantClaim = function (userData, payloadData, callback) {
         function (cb) {
             var criteria = {
                 _id: userData._id,
-                emailId: process.env.SHOUT_OWNER_EMAIL
+                userType: Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER
             };
             Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
                 if (err) cb(err);

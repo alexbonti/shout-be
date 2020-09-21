@@ -20,6 +20,7 @@ var DATABASE = {
   },
   USER_ROLES: {
     USER: "USER",
+    OWNER: "OWNER",
     SUPERADMIN: "SUPERADMIN",
     ADMIN: "ADMIN",
     MANAGER: "MANAGER",
@@ -110,12 +111,12 @@ var STATUS_MSG = {
       customMessage: "Incorrect Password",
       type: "INCORRECT_PASSWORD"
     },
-    ACCOUNT_BLOCKED:{
+    ACCOUNT_BLOCKED: {
       statusCode: 400,
       customMessage: "You account has been blocked by authorities. Please Contact them.",
       type: "ACCOUNT_BLOCKED"
     },
-    PRIVILEGE_MISMATCH:{
+    PRIVILEGE_MISMATCH: {
       statusCode: 400,
       customMessage: "Your account doesnt have this privileges",
       type: "PRIVILEGE_MISMATCH"
@@ -221,6 +222,11 @@ var STATUS_MSG = {
       customMessage: "Team does not exist",
       type: "INVALID_TEAM_ID"
     },
+    INVALID_USERTYPE: {
+      statusCode: 400,
+      customMessage: "Invalid User",
+      type: "INVALID_USERTYPE"
+    },
     INVALID_TEAM_MEMBER: {
       statusCode: 400,
       customMessage: "Team member does not exist",
@@ -272,7 +278,7 @@ var TIME_UNITS = {
   DAYS: "days"
 };
 
-const CUSTOM_ERROR_404 = function(msg) {
+const CUSTOM_ERROR_404 = function (msg) {
   return {
     statusCode: 404,
     customMessage: msg + " NOT FOUND",
@@ -280,7 +286,7 @@ const CUSTOM_ERROR_404 = function(msg) {
   };
 };
 
-const CUSTOM_ERROR = function(msg, statusCode) {
+const CUSTOM_ERROR = function (msg, statusCode) {
   return {
     statusCode: statusCode || 400,
     customMessage: msg

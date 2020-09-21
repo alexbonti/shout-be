@@ -187,7 +187,7 @@ var createAdmin = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -281,7 +281,7 @@ var getAdmin = function (userData, callback) {
           if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
           else {
             userFound = (data && data[0]) || null;
-            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
             else cb();
           }
         }
@@ -316,7 +316,7 @@ var blockUnblockAdmin = function (userData, payloadData, callback) {
           if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
           else {
             userFound = (data && data[0]) || null;
-            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+            if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
             else cb();
           }
         }
@@ -741,7 +741,6 @@ var createSuperAdmin = function (userData, payloadData, callback) {
       function (cb) {
         var criteria = {
           _id: userData._id,
-          emailId: process.env.SHOUT_OWNER_EMAIL
         };
         Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
           if (err) cb(err);
@@ -749,7 +748,7 @@ var createSuperAdmin = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -849,7 +848,7 @@ var createSuperAdminInsideCompany = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN && userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -943,7 +942,7 @@ var deleteSuperAdminInsideCompany = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1473,7 +1472,7 @@ var checkSuperAdminForRights = function (userData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1534,7 +1533,7 @@ var adminsInsideCompany = function (userData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1606,7 +1605,7 @@ var usersInsideCompany = function (userData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1668,7 +1667,6 @@ var getMerchantProfile = function (userData, payloadData, callback) {
       function (cb) {
         var criteria = {
           _id: userData._id,
-          emailId: process.env.SHOUT_OWNER_EMAIL
         };
         Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
           if (err) cb(err);
@@ -1676,7 +1674,7 @@ var getMerchantProfile = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1717,7 +1715,6 @@ var adminsInsideCompanies = function (userData, payloadData, callback) {
       function (cb) {
         var criteria = {
           _id: userData._id,
-          emailId: process.env.SHOUT_OWNER_EMAIL
         };
         Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
           if (err) cb(err);
@@ -1725,7 +1722,7 @@ var adminsInsideCompanies = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1778,7 +1775,6 @@ var usersInsideCompanies = function (userData, payloadData, callback) {
       function (cb) {
         var criteria = {
           _id: userData._id,
-          emailId: process.env.SHOUT_OWNER_EMAIL
         };
         Service.AdminService.getAdmin(criteria, { password: 0 }, {}, function (err, data) {
           if (err) cb(err);
@@ -1786,7 +1782,7 @@ var usersInsideCompanies = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
@@ -1844,7 +1840,7 @@ var updateUser = function (userData, payloadData, callback) {
             if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
             else {
               userFound = (data && data[0]) || null;
-              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN) cb(ERROR.PRIVILEGE_MISMATCH);
+              if (userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.SUPERADMIN&& userFound.userType != Config.APP_CONSTANTS.DATABASE.USER_ROLES.OWNER) cb(ERROR.PRIVILEGE_MISMATCH);
               else cb();
             }
           }
