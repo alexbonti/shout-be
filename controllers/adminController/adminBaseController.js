@@ -391,7 +391,7 @@ var createUser = function (userData, payloadData, callback) {
       })
     },
     function (cb) {
-      if (adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
+      if (adminDetails == null || adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
         cb(ERROR.INVALID_COMPANY_ID)
       }
       else {
