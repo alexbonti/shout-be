@@ -27,7 +27,7 @@ var Config = require("../../config");
 //             );
 //         });
 //     },
-//     config: {
+//     options: {
 //         description: "create company",
 //         tags: ["api", "admin"],
 //         auth: "UserAuth",
@@ -78,13 +78,13 @@ var updateCompany = {
             );
         });
     },
-    config: {
+    options: {
         description: "update company",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 companyName: Joi.string().required(),
                 companyLogo: Joi.string().required(),
                 location: Joi.string().required(),
@@ -97,7 +97,7 @@ var updateCompany = {
                         description: Joi.string().required()
                     }
                 ).required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -134,20 +134,20 @@ var addValuesToCompany = {
             );
         });
     },
-    config: {
+    options: {
         description: "add Values To Company",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 values: Joi.array().items(
                     {
                         name: Joi.string().required(),
                         description: Joi.string().required()
                     }
                 ).required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -183,17 +183,17 @@ var editValuesOfCompany = {
             );
         });
     },
-    config: {
+    options: {
         description: "edit Values of Company",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 valuesId: Joi.string().required(),
                 name: Joi.string().required(),
                 description: Joi.string().required()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -229,17 +229,17 @@ var removeValueFromCompany = {
             );
         });
     },
-    config: {
+    options: {
         description: "remove Value From Company",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 valuesId: Joi.string().required(),
                 // name: Joi.string().required(),
                 // description: Joi.string().required()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -274,7 +274,7 @@ var getCompany = {
             );
         });
     },
-    config: {
+    options: {
         description: "get company details",
         tags: ["api", "admin"],
         auth: "UserAuth",
@@ -315,15 +315,15 @@ var updateCompanyVision = {
             );
         });
     },
-    config: {
+    options: {
         description: "update company vision",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 companyDescription: Joi.string().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -359,19 +359,19 @@ var updateCompanyTeamsConfig = {
             );
         });
     },
-    config: {
+    options: {
         description: "update company teams' config",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamsConfig: Joi.object({
                     attentionSpan: Joi.number().required(),
                     recognitionSpan: Joi.number().required(),
                     recognition: Joi.number().required(),
                 }).required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -405,7 +405,7 @@ var getCompanyForManager = {
             );
         });
     },
-    config: {
+    options: {
         description: "get company details",
         tags: ["api", "user"],
         auth: "UserAuth",
@@ -444,7 +444,7 @@ var getCompanies = {
             );
         });
     },
-    config: {
+    options: {
         description: "get companies details",
         tags: ["api", "admin"],
         auth: "UserAuth",

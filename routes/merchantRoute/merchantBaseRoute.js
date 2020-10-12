@@ -6,7 +6,7 @@ var Config = require("../../config");
 var MerchantLogin = {
     method: "POST",
     path: "/api/merchant/login",
-    config: {
+    options: {
         description: "Merchant Login",
         tags: ["api", "merchant"],
         handler: function (request, h) {
@@ -24,13 +24,13 @@ var MerchantLogin = {
             });
         },
         validate: {
-            payload: {
+            payload: Joi.object({
                 emailId: Joi.string().required(),
                 password: Joi.string()
                     .required()
                     .min(5)
                     .trim()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -66,18 +66,18 @@ var createMerchant = {
             );
         });
     },
-    config: {
+    options: {
         description: "create Merchant",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 emailId: Joi.string().required(),
                 fullName: Joi.string()
                     .optional()
                     .allow("")
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -108,7 +108,7 @@ var getMerchant = {
             });
         });
     },
-    config: {
+    options: {
         description: "get Merchants list",
         tags: ["api", "Merchant"],
         auth: "UserAuth",
@@ -149,16 +149,16 @@ var blockUnblockMerchant = {
             );
         });
     },
-    config: {
+    options: {
         description: "block/unblock a Merchant",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 MerchantId: Joi.string().required(),
                 block: Joi.boolean().required()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -199,17 +199,17 @@ var changePassword = {
             );
         });
     },
-    config: {
+    options: {
         description: "change Password",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 skip: Joi.boolean().required(),
                 oldPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") }),
                 newPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") })
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -224,7 +224,7 @@ var changePassword = {
 var logoutMerchant = {
     method: "PUT",
     path: "/api/merchant/logout",
-    config: {
+    options: {
         description: "Logout Merchant",
         auth: "UserAuth",
         tags: ["api", "merchant"],
@@ -284,7 +284,7 @@ var getMerchantSummary = {
             });
         });
     },
-    config: {
+    options: {
         description: "get shouting Summary for Merchant",
         tags: ["api", "merchant"],
         auth: "UserAuth",
@@ -320,7 +320,7 @@ var getOrdersHistory = {
             });
         });
     },
-    config: {
+    options: {
         description: "get Merchant Orders History",
         tags: ["api", "Merchant"],
         auth: "UserAuth",
@@ -356,7 +356,7 @@ var getClaimStatus = {
             });
         });
     },
-    config: {
+    options: {
         description: "Get Claim Status",
         tags: ["api", "merchant"],
         auth: "UserAuth",
@@ -392,16 +392,16 @@ var getClaimForMerchant = {
             });
         });
     },
-    config: {
+    options: {
         description: "get Claim For Merchant",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
             failAction: UniversalFunctions.failActionFunction,
-            payload: {
+            payload: Joi.object({
                 merchantId: Joi.string().required()
-            }
+            })
         },
         plugins: {
             "hapi-swagger": {
@@ -440,19 +440,19 @@ var updateMerchantProfile = {
             );
         });
     },
-    config: {
+    options: {
         description: "update Merchant Profile",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 storeName: Joi.string().required(),
                 storeNumber: Joi.string().regex(/^[0-9]+$/).min(5).optional(),
                 profilePicture: Joi.string().required(),
                 lat: Joi.string().required(),
                 long: Joi.string().required()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -492,15 +492,15 @@ var createClaim = {
             );
         });
     },
-    config: {
+    options: {
         description: "create Claim",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 amount: Joi.number().required()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -540,15 +540,15 @@ var confirmMerchantClaim = {
             );
         });
     },
-    config: {
+    options: {
         description: "confirm Merchant Claim",
         tags: ["api", "merchant"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 claimId: Joi.string().required()
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -575,14 +575,14 @@ var merchantLocationByKeyword = {
             });
         });
     },
-    config: {
+    options: {
         description: "merchant Location By Keyword",
         tags: ["api", "merchant"],
         validate: {
             failAction: UniversalFunctions.failActionFunction,
-            payload: {
+            payload: Joi.object({
                 name: Joi.string().required()
-            }
+            })
         },
         plugins: {
             "hapi-swagger": {
@@ -607,15 +607,15 @@ var merchantLocationByCoordinates = {
             });
         });
     },
-    config: {
+    options: {
         description: "merchant Location By Coordinates",
         tags: ["api", "merchant"],
         validate: {
             failAction: UniversalFunctions.failActionFunction,
-            payload: {
+            payload: Joi.object({
                 lat: Joi.string().required(),
                 long: Joi.string().required()
-            }
+            })
         },
         plugins: {
             "hapi-swagger": {

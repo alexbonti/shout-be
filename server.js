@@ -4,11 +4,13 @@
 
 "use strict";
 //External Dependencies
-var Hapi = require("hapi");
+var Hapi = require("@hapi/hapi");
 
 //Internal Dependencies
 var Config = require("./config");
 var Plugins = require("./plugins");
+const Joi = require('joi');
+
 var SocketManager = require("./lib/socketManager");
 var Routes = require("./routes");
 var MongoConnect = require('./mongoConnect')
@@ -23,6 +25,7 @@ const init = async () => {
     port: process.env.HAPI_PORT,
     routes: { cors: true }
   });
+  await server.validator(Joi);
 
   //Register All Plugins
   await server.register(Plugins, {}, err => {

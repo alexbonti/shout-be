@@ -24,7 +24,7 @@ var uploadImage =
             });
         });
     },
-    config: {
+    options: {
         description: 'image upload',
         tags: ['api', 'upload', 'image'],
         payload: {
@@ -34,12 +34,12 @@ var uploadImage =
             allow: 'multipart/form-data'
         },
         validate: {
-            payload: {
+            payload: Joi.object({
                 imageFile: Joi.any()
                     .meta({ swaggerType: 'file' })
                     .required()
                     .description('image file')
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -67,7 +67,7 @@ var uploadDocument =
             });
         });
     },
-    config: {
+    options: {
         description: 'upload document',
         tags: ['api', 'upload', 'document'],
         payload: {
@@ -77,12 +77,12 @@ var uploadDocument =
             allow: 'multipart/form-data'
         },
         validate: {
-            payload: {
+            payload: Joi.object({
                 documentFile: Joi.any()
                     .meta({ swaggerType: 'file' })
                     .required()
                     .description('document file')
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {

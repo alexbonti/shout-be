@@ -39,11 +39,11 @@ var userRegister = {
       }
     });
   },
-  config: {
+  options: {
     description: "Register a new user",
     tags: ["api", "user"],
     validate: {
-      payload: {
+      payload: Joi.object({
         firstName: Joi.string()
           .regex(/^[a-zA-Z ]+$/)
           .trim()
@@ -66,7 +66,7 @@ var userRegister = {
         password: Joi.string()
           .required()
           .min(5)
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -107,17 +107,17 @@ var verifyOTP = {
       });
     });
   },
-  config: {
+  options: {
     auth: "UserAuth",
     description: "Verify OTP for User",
     tags: ["api", "user"],
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         OTPCode: Joi.string()
           .length(6)
           .required()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -156,17 +156,17 @@ var login = {
       });
     }
   },
-  config: {
+  options: {
     description: "Login Via Phone Number & Password For User",
     tags: ["api", "user"],
     validate: {
-      payload: {
+      payload: Joi.object({
         emailId: Joi.string().required(),
         password: Joi.string()
           .required()
           .min(5)
           .trim()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -203,7 +203,7 @@ var resendOTP = {
       });
     });
   },
-  config: {
+  options: {
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
@@ -223,7 +223,7 @@ var resendOTP = {
 var getOTP = {
   method: "GET",
   path: "/api/getOTP",
-  config: {
+  options: {
     description: "get OTP for Customer",
     tags: ["api", "user"],
     handler: function (request, h) {
@@ -286,7 +286,7 @@ var accessTokenLogin = {
       });
     });
   },
-  config: {
+  options: {
     description: "access token login",
     tags: ["api", "user"],
     auth: "UserAuth",
@@ -306,7 +306,7 @@ var accessTokenLogin = {
 var logoutCustomer = {
   method: "PUT",
   path: "/api/user/logout",
-  config: {
+  options: {
     description: "Logout user",
     auth: "UserAuth",
     tags: ["api", "user"],
@@ -350,7 +350,7 @@ var logoutCustomer = {
 var getProfile = {
   method: "GET",
   path: "/api/user/getProfile",
-  config: {
+  options: {
     description: "get profile of user",
     auth: "UserAuth",
     tags: ["api", "user"],
@@ -430,17 +430,17 @@ var changePassword = {
       );
     });
   },
-  config: {
+  options: {
     description: "change Password",
     tags: ["api", "customer"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         skip: Joi.boolean().required(),
         oldPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") }),
         newPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") })
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -455,7 +455,7 @@ var changePassword = {
 var forgotPassword = {
   method: "POST",
   path: "/api/user/forgotPassword",
-  config: {
+  options: {
     description: "forgot password",
     tags: ["api", "user"],
     handler: function (request, h) {
@@ -489,9 +489,9 @@ var forgotPassword = {
       });
     },
     validate: {
-      payload: {
+      payload: Joi.object({
         emailId: Joi.string().required()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -506,7 +506,7 @@ var forgotPassword = {
 var resetPassword = {
   method: "POST",
   path: "/api/user/resetPassword",
-  config: {
+  options: {
     description: "reset password",
     tags: ["api", "user"],
     handler: function (request, h) {
@@ -540,14 +540,14 @@ var resetPassword = {
       });
     },
     validate: {
-      payload: {
+      payload: Joi.object({
         password: Joi.string()
           .min(6)
           .required()
           .trim(),
         emailId: Joi.string().required(),
         OTPCode: Joi.string().required()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -582,7 +582,7 @@ var getManagerTeams = {
       );
     });
   },
-  config: {
+  options: {
     description: "get teams",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -623,16 +623,16 @@ var getIndividualManagerTeam = {
       );
     });
   },
-  config: {
+  options: {
     description: "get IndividualTeam",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
       failAction: UniversalFunctions.failActionFunction,
-      payload: {
+      payload: Joi.object({
         teamId: Joi.string().required(),
-      }
+      })
     },
     plugins: {
       "hapi-swagger": {
@@ -662,20 +662,20 @@ var managerShout = {
       });
     });
   },
-  config: {
+  options: {
     description: "Shout inside team",
     tags: ["api", "user"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
       failAction: UniversalFunctions.failActionFunction,
-      payload: {
+      payload: Joi.object({
         teamId: Joi.string().required(),
         userIds: Joi.array().required(),
         message: Joi.string().required(),
         credits: Joi.number().required(),
         values: Joi.array().required(),
-      }
+      })
     },
     plugins: {
       "hapi-swagger": {
@@ -705,7 +705,7 @@ var getManagerShoutedHistory = {
       });
     });
   },
-  config: {
+  options: {
     description: "get Manager Shouted History",
     tags: ["api", "admin"],
     auth: "UserAuth",

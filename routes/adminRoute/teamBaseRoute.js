@@ -27,18 +27,18 @@ var createTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "create team",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamName: Joi.string().required(),
                 location: Joi.string().required(),
                 managerIds: Joi.array().required(),
                 userIds: Joi.array().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -73,7 +73,7 @@ var getTeams = {
             );
         });
     },
-    config: {
+    options: {
         description: "get teams",
         tags: ["api", "admin"],
         auth: "UserAuth",
@@ -114,16 +114,16 @@ var getIndividualTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "get IndividualTeam",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
             failAction: UniversalFunctions.failActionFunction,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
-            }
+            })
         },
         plugins: {
             "hapi-swagger": {
@@ -158,17 +158,17 @@ var updateTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "update team",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
                 teamName: Joi.string().required(),
                 location: Joi.string().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -204,15 +204,15 @@ var deleteTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "delete team",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -248,16 +248,16 @@ var addUsersToTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "add Users To Team",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
                 userIds: Joi.array().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -293,16 +293,16 @@ var addManagersToTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "add managers To Team",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
                 managerIds: Joi.array().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -338,16 +338,16 @@ var promoteUserToManager = {
             );
         });
     },
-    config: {
+    options: {
         description: "promote User To Manager",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
                 userId: Joi.string().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -384,16 +384,16 @@ var demoteManagerToUser = {
             );
         });
     },
-    config: {
+    options: {
         description: "demote Manager To User",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
                 managerId: Joi.string().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -429,16 +429,16 @@ var removeMemberFromTeam = {
             );
         });
     },
-    config: {
+    options: {
         description: "remove Member From team",
         tags: ["api", "admin"],
         auth: "UserAuth",
         validate: {
             headers: UniversalFunctions.authorizationHeaderObj,
-            payload: {
+            payload: Joi.object({
                 teamId: Joi.string().required(),
                 memberId: Joi.array().required(),
-            },
+            }),
             failAction: UniversalFunctions.failActionFunction
         },
         plugins: {
@@ -474,7 +474,7 @@ var getSpecificUserHistory = {
             );
         });
     },
-    config: {
+    options: {
         description: "Get specific user History",
         tags: ["api", "admin"],
         auth: "UserAuth",

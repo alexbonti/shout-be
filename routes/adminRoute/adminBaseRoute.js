@@ -9,7 +9,7 @@ var Config = require("../../config");
 var adminLogin = {
   method: "POST",
   path: "/api/admin/login",
-  config: {
+  options: {
     description: "Admin Login",
     tags: ["api", "admin"],
     handler: function (request, h) {
@@ -27,13 +27,13 @@ var adminLogin = {
       });
     },
     validate: {
-      payload: {
+      payload: Joi.object({
         emailId: Joi.string().required(),
         password: Joi.string()
           .required()
           .min(5)
           .trim()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -68,7 +68,7 @@ var accessTokenLogin = {
       });
     });
   },
-  config: {
+  options: {
     description: "access token login",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -109,18 +109,18 @@ var createAdmin = {
       );
     });
   },
-  config: {
+  options: {
     description: "create sub admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         emailId: Joi.string().required(),
         fullName: Joi.string()
           .optional()
           .allow("")
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -151,7 +151,7 @@ var getAdmin = {
       });
     });
   },
-  config: {
+  options: {
     description: "get all sub admin list",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -192,16 +192,16 @@ var blockUnblockAdmin = {
       );
     });
   },
-  config: {
+  options: {
     description: "block/unblock a sub admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         adminId: Joi.string().required(),
         block: Joi.boolean().required()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -237,13 +237,13 @@ var createUser = {
       );
     });
   },
-  config: {
+  options: {
     description: "create new user from admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         firstName: Joi.string()
           .regex(/^[a-zA-Z ]+$/)
           .trim()
@@ -267,7 +267,7 @@ var createUser = {
           original: Joi.string(),
           thumbnail: Joi.string()
         }).optional().allow('')
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -298,7 +298,7 @@ var getUser = {
       });
     });
   },
-  config: {
+  options: {
     description: "get all user list",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -339,16 +339,16 @@ var blockUnblockUser = {
       );
     });
   },
-  config: {
+  options: {
     description: "block/unblock a user",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         userId: Joi.string().required(),
         block: Joi.boolean().required()
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -389,17 +389,17 @@ var changePassword = {
       );
     });
   },
-  config: {
+  options: {
     description: "change Password",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         skip: Joi.boolean().required(),
         oldPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") }),
         newPassword: Joi.string().when('skip', { is: false, then: Joi.string().required().min(5), otherwise: Joi.string().optional().allow("") })
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -414,7 +414,7 @@ var changePassword = {
 var logoutAdmin = {
   method: "PUT",
   path: "/api/admin/logout",
-  config: {
+  options: {
     description: "Logout admin",
     auth: "UserAuth",
     tags: ["api", "admin"],
@@ -475,7 +475,7 @@ var getAdminSummary = {
       });
     });
   },
-  config: {
+  options: {
     description: "get shouting Summary for admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -511,7 +511,7 @@ var getBalance = {
       });
     });
   },
-  config: {
+  options: {
     description: "get balance for admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -552,18 +552,18 @@ var createSuperAdmin = {
       );
     });
   },
-  config: {
+  options: {
     description: "create super admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         emailId: Joi.string().required(),
         fullName: Joi.string()
           .optional()
           .allow("")
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -599,18 +599,18 @@ var createSuperAdminInsideCompany = {
       );
     });
   },
-  config: {
+  options: {
     description: "create super admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         emailId: Joi.string().required(),
         fullName: Joi.string()
           .optional()
           .allow("")
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -646,15 +646,15 @@ var deleteSuperAdminInsideCompany = {
       );
     });
   },
-  config: {
+  options: {
     description: "delete super admin",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         adminId: Joi.string().required(),
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -685,7 +685,7 @@ var getAdminTeamShoutedHistory = {
       });
     });
   },
-  config: {
+  options: {
     description: "get Admin Team Shouted History",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -721,7 +721,7 @@ var getMostRecognisedTeam = {
       });
     });
   },
-  config: {
+  options: {
     description: "get Most Recognised Team",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -757,7 +757,7 @@ var getTeamNeedsAttention = {
       });
     });
   },
-  config: {
+  options: {
     description: "get Team Needs Attention",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -793,7 +793,7 @@ var getShoutingTrends = {
       });
     });
   },
-  config: {
+  options: {
     description: "get Shouting Trends",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -832,7 +832,7 @@ var checkSuperAdminForRights = {
       );
     });
   },
-  config: {
+  options: {
     description: "check Super Admin ForRights",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -871,7 +871,7 @@ var adminsInsideCompany = {
       );
     });
   },
-  config: {
+  options: {
     description: "admin list Inside Company",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -910,7 +910,7 @@ var usersInsideCompany = {
       );
     });
   },
-  config: {
+  options: {
     description: "user list Inside Company",
     tags: ["api", "admin"],
     auth: "UserAuth",
@@ -950,14 +950,14 @@ var getMerchantProfile = {
       );
     });
   },
-  config: {
+  options: {
     description: "get Merchant Profile",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
-      payload: {
+      payload: Joi.object({
         merchantId: Joi.string().required()
-      },
+      }),
       headers: UniversalFunctions.authorizationHeaderObj,
       failAction: UniversalFunctions.failActionFunction
     },
@@ -993,14 +993,14 @@ var adminsInsideCompanies = {
       );
     });
   },
-  config: {
+  options: {
     description: "admin list Inside Company",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
-      payload: {
+      payload: Joi.object({
         companyId: Joi.string().required()
-      },
+      }),
       headers: UniversalFunctions.authorizationHeaderObj,
       failAction: UniversalFunctions.failActionFunction
     },
@@ -1036,14 +1036,14 @@ var usersInsideCompanies = {
       );
     });
   },
-  config: {
+  options: {
     description: "user list Inside Company",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
-      payload: {
+      payload: Joi.object({
         companyId: Joi.string().required()
-      },
+      }),
       headers: UniversalFunctions.authorizationHeaderObj,
       failAction: UniversalFunctions.failActionFunction
     },
@@ -1080,13 +1080,13 @@ var updateUser = {
       );
     });
   },
-  config: {
+  options: {
     description: "Update User Detail",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         userId: Joi.string().required(),
         profilePicture: Joi.object({
           original: Joi.string(),
@@ -1106,7 +1106,7 @@ var updateUser = {
           .regex(/^[0-9]+$/)
           .min(5)
           .required(),
-      },
+      }),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {

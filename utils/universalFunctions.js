@@ -4,7 +4,7 @@
 var Joi = require('joi');
 var async = require('async');
 var MD5 = require('md5');
-var Boom = require('boom');
+var Boom = require('@hapi/boom').Boom;
 var CONFIG = require('../config');
 var randomstring = require("randomstring");
 var validator = require('validator');
@@ -65,7 +65,7 @@ var sendSuccess = function (successMsg, data) {
 
     }
 };
-var failActionFunction = function (request, reply, error) {
+const failActionFunction = (request, reply, error) => {
     var customErrorMessage = '';
     if (error.output.payload.message.indexOf("[") > -1) {
         customErrorMessage = error.output.payload.message.substr(error.output.payload.message.indexOf("["));
@@ -82,7 +82,7 @@ var failActionFunction = function (request, reply, error) {
 
 var authorizationHeaderObj = Joi.object({
     authorization: Joi.string().required()
-}).unknown();
+}).options({ allowUnknown: true });
 
 var generateRandomString = function () {
     return randomstring.generate(12);

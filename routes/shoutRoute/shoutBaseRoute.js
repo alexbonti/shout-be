@@ -22,21 +22,21 @@ var createShout = {
       });
     });
   },
-  config: {
+  options: {
     description: "Shout to team",
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
       headers: UniversalFunctions.authorizationHeaderObj,
       failAction: UniversalFunctions.failActionFunction,
-      payload: {
+      payload: Joi.object({
         teamSkip: Joi.boolean().required(),
         teamId: Joi.string().required(),
         userId: Joi.array().when('teamSkip', { is: true, then: Joi.array().required(), otherwise: Joi.array().optional().allow("") }),
         message: Joi.string().required(),
         credits: Joi.number().required(),
         values: Joi.array().required(),
-      }
+      })
     },
     plugins: {
       "hapi-swagger": {
@@ -63,13 +63,13 @@ var getShoutTransaction = {
       });
     });
   },
-  config: {
+  options: {
     description: "get shout transactions",
     tags: ["api", "admin"],
     validate: {
-      payload: {
+      payload: Joi.object({
         transactionId: Joi.string().required()
-      }
+      })
     },
     plugins: {
       "hapi-swagger": {
@@ -95,16 +95,16 @@ var redeemTransaction = {
       });
     });
   },
-  config: {
+  options: {
     description: "Redeem transaction",
     tags: ["api", "user"],
     validate: {
-      payload: {
+      payload: Joi.object({
         transactionId: Joi.string().required(),
         amount: Joi.number().required(),
         merchantId: Joi.string().required(),
         orderItem: Joi.string()
-      }
+      })
     },
     plugins: {
       "hapi-swagger": {
@@ -129,13 +129,13 @@ var getMerchantToShout = {
       });
     });
   },
-  config: {
+  options: {
     description: "get Merchant To Shout",
     tags: ["api", "admin"],
     validate: {
-      payload: {
+      payload: Joi.object({
         merchantId: Joi.string().required()
-      }
+      })
     },
     plugins: {
       "hapi-swagger": {

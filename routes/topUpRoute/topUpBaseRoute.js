@@ -22,7 +22,7 @@ var topUpBalance = {
         });
       });
     },
-    config: {
+    options: {
       description: "Top up admin balance",
       tags: ["api", "admin"],
       auth: "UserAuth",
@@ -62,7 +62,7 @@ var topUpBalance = {
         });
       });
     },
-    config: {
+    options: {
       description: "Top up admin balance",
       tags: ["api", "admin"],
       auth: "UserAuth",

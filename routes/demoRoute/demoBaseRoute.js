@@ -6,18 +6,17 @@ var Joi = require("joi");
 var Config = require("../../config");
 var Controller = require("../../controllers");
 
-var demoApiAuth = {
+
+const demoApi = {
   method: "POST",
-  path: "/api/demo/demoApiAuth",
-  config: {
-    description: "demo api with auth",
+  path: "/api/demo/demoApi",
+  options: {
+    description: "demo api",
     tags: ["api", "demo"],
-    auth: 'UserAuth',
-    handler: function(request, h) {
+    handler: function (request, h) {
       var payloadData = request.payload;
-      var userData = request.auth && request.auth.credentials && request.auth.credentials.userData|| null;
       return new Promise((resolve, reject) => {
-        Controller.DemoBaseController.demoFunctionAuth(userData,payloadData, function(
+        Controller.DemoBaseController.demoFunction(payloadData, function (
           err,
           data
         ) {
@@ -33,10 +32,9 @@ var demoApiAuth = {
       });
     },
     validate: {
-      headers: UniversalFunctions.authorizationHeaderObj,
-      payload: {
+      payload: Joi.object({
         message: Joi.string().required()
-      },
+      }).label("Demo Model"),
       failAction: UniversalFunctions.failActionFunction
     },
     plugins: {
@@ -48,44 +46,6 @@ var demoApiAuth = {
   }
 };
 
-var demoApi = {
-  method: "POST",
-  path: "/api/demo/demoApi",
-  config: {
-    description: "demo api",
-    tags: ["api", "demo"],
-    handler: function(request, h) {
-      var payloadData = request.payload;
-      return new Promise((resolve, reject) => {
-        Controller.DemoBaseController.demoFunction(payloadData, function(
-          err,
-          data
-        ) {
-          if (err) reject(UniversalFunctions.sendError(err));
-          else
-            resolve(
-              UniversalFunctions.sendSuccess(
-                Config.APP_CONSTANTS.STATUS_MSG.SUCCESS.DEFAULT,
-                data
-              )
-            );
-        });
-      });
-    },
-    validate: {
-      payload: {
-        message: Joi.string().required()
-      },
-      failAction: UniversalFunctions.failActionFunction
-    },
-    plugins: {
-      "hapi-swagger": {
-        responseMessages:
-          UniversalFunctions.CONFIG.APP_CONSTANTS.swaggerDefaultResponseMessages
-      }
-    }
-  }
-};
 
 var DemoBaseRoute = [demoApi];
 module.exports = DemoBaseRoute;
