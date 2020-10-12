@@ -11,6 +11,19 @@ var _ = require("underscore");
 var Config = require("../../config");
 var Nodemailer = require("../../lib/nodeMailer");
 
+/**
+ * 
+ * @param {String} email Email Address to Verify
+ * @param {Function} cb Async Callback
+ */
+const verifyEmail = (email, cb) => {
+  if (UniversalFunctions.verifyEmailFormat(email)) {
+    cb();
+  } else {
+    cb(ERROR.INVALID_EMAIL_FORMAT);
+  }
+}
+
 var adminLogin = function (payloadData, callback) {
   payloadData.emailId = payloadData.emailId.toLowerCase();
   var userFound = false;
@@ -192,6 +205,9 @@ var createAdmin = function (userData, payloadData, callback) {
             }
           }
         });
+      },
+      (cb) => {
+        verifyEmail(payloadData.emailId, cb);
       },
       function (cb) {
         var criteria = {
@@ -389,6 +405,9 @@ var createUser = function (adminData, payloadData, callback) {
           else cb()
         }
       })
+    },
+    (cb) => {
+      verifyEmail(payloadData.emailId, cb);
     },
     function (cb) {
       if (adminDetails == null || adminDetails.companyId == null || adminDetails.companyId == 'undefined') {
@@ -845,7 +864,6 @@ var completeSuperAdminSignUp = function (DATA, callback) {
   })
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 var createSuperAdminInsideCompany = function (userData, payloadData, callback) {
   var newAdmin;
   var adminSummary;
@@ -881,7 +899,9 @@ var createSuperAdminInsideCompany = function (userData, payloadData, callback) {
           }
         })
       },
-
+      (cb) => {
+        verifyEmail(payloadData.emailId, cb);
+      },
       function (cb) {
         var criteria = {
           emailId: payloadData.emailId
