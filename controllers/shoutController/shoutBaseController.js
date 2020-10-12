@@ -57,8 +57,6 @@ var createShout = function (userData, payloadData, callback) {
         }
       })
     },
-
-
     function (cb) {
       projection = {
         firstLogin: 0,
@@ -73,7 +71,6 @@ var createShout = function (userData, payloadData, callback) {
         __v: 0,
         accessToken: 0,
       }
-
       if (payloadData.teamSkip == true) {
         var taskInParallel = [];
         for (var key in payloadData.userId) {
@@ -125,7 +122,6 @@ var createShout = function (userData, payloadData, callback) {
         cb();
       }
     },
-
     function (cb) {
       Service.TeamService.getTeam({ _id: payloadData.teamId }, {}, {}, function (err, data) {
         if (err) cb(err)
@@ -135,68 +131,8 @@ var createShout = function (userData, payloadData, callback) {
         }
       })
     },
-
-
-
-    // function (cb) {
-    //   if (teamDetails) {
-    //     var taskInParallel = [];
-    //     for (var key in teamMemberIds) {
-    //       (function (key) {
-    //         taskInParallel.push((function (key) {
-    //           return function (embeddedCB) {
-    //             Service.UserService.getUser({
-    //               _id: teamMemberIds[key]
-    //             }, {}, {
-    //               lean: true
-    //             }, function (err, data) {
-    //               if (err) {
-    //                 embeddedCB(err)
-    //               } else {
-
-    //                 if (payloadData.credits > 0 && amount >= payloadData.credits) {
-    //                   amount -= payloadData.credits;
-    //                   DATA.adminName = userFound.fullName;
-    //                   DATA.receiverId = data[0]._id;
-    //                   DATA.receiversName = data[0].firstName;
-    //                   DATA.receiversEmail = data[0].emailId;
-    //                   DATA.credits = payloadData.credits;
-    //                   DATA.message = payloadData.message;
-    //                   console.log(DATA);
-    //                   dataToSend.push(DATA);
-    //                   DATA = {};
-    //                   numberOfPeople += 1;
-    //                 }
-    //                 else {
-    //                   DATA.receiverId = data[0]._id;
-    //                   DATA.receiversName = data[0].firstName;
-    //                   DATA.receiversEmail = data[0].emailId;
-    //                   DATA.credits = payloadData.credits;
-    //                   DATA.message = payloadData.message;
-    //                   dataNotSent.push(DATA);
-    //                   DATA = {};
-    //                 }
-    //                 embeddedCB()
-    //               }
-    //             })
-    //           }
-    //         })(key))
-    //       }(key));
-    //     }
-    //     async.parallel(taskInParallel, function (err, result) {
-    //       cb(null);
-    //     });
-    //   }
-    //   else {
-    //     cb()
-    //   }
-    // },
-
-
     function (cb) {
       if (payloadData.teamSkip) {
-        console.log(payloadData, amount)
-
         shouting = payloadData.credits * numberOfPeople;
         totalshouting = adminSummary.shouting + shouting;
         recognition = adminSummary.recognition + numberOfPeople;
@@ -283,12 +219,10 @@ var createShout = function (userData, payloadData, callback) {
 
     function (cb) {
       if (payloadData.teamSkip) {
-        console.log("JAOIDHASOIDOIAFOINEI HERE INSTEAD")
         cb();
       }
       else {
-        let temp = teamDetails.credits + payloadData.credits
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", temp);
+        let temp = teamDetails.credits + payloadData.credits;
         Service.TeamService.updateTeam({ _id: payloadData.teamId }, { $set: { credits: temp } }, {}, function (err, data) {
           if (err) cb(err)
           else {
