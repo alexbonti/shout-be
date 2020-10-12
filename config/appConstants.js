@@ -78,8 +78,13 @@ var STATUS_MSG = {
     },
     EMAIL_NO_EXIST: {
       statusCode: 400,
-      customMessage: "Email Address Already Exist",
+      customMessage: "Email does not exist.",
       type: "EMAIL_NO_EXIST"
+    },
+    EMAIL_ALREADY_EXIST: {
+      statusCode: 400,
+      customMessage: "Email address already exist.",
+      type: "EMAIL_ALREADY_EXIST"
     },
     USERNAME_EXIST: {
       statusCode: 400,

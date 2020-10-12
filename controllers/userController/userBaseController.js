@@ -129,7 +129,7 @@ var createUser = function (payloadData, callback) {
         ) {
           if (err) {
             if (err.code == 11000 && err.message.indexOf("emailId_1") > -1) {
-              cb(ERROR.EMAIL_NO_EXIST);
+              cb(ERROR.EMAIL_ALREADY_EXIST);
             } else {
               cb(err);
             }
