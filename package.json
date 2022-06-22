@@ -21,7 +21,7 @@
     "@hapi/hapi": "^20.0.1",
     "@hapi/inert": "^6.0.3",
     "@hapi/vision": "^6.0.1",
-    "async": "3.0.1",
+    "async": "3.2.2",
     "body-parser": "1.19.0",
     "cfenv": "1.2.2",
     "dotenv": "8.0.0",
